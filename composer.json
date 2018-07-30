@@ -1,0 +1,19 @@
+{
+    "name": "wrklst/wrklst-plugin",
+    "description": "Integrate your WrkLst Database with your Wordpress Website.",
+    "type": "project",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Tobias Vielmetter-Diekmann",
+            "email": "tobias@wrklst.art"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Inc\\": "./inc"
+        }
+    }
+}
