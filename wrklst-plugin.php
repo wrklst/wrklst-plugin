@@ -12,9 +12,7 @@
 * License: GPL12
 */
 
-if(!function_exists( 'add_action')) {
-    die();
-}
+if(!function_exists( 'add_action')) die();
 
 if(file_exists(dirname(__FILE__).'/vendor/autoload.php')) {
     require_once dirname(__FILE__).'/vendor/autoload.php';
