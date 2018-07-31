@@ -136,24 +136,18 @@ media.view.wlWork = media.View.extend({
             //get inventories from wrklst
             function get_inventories() {
                 url_call = wrklst_url+'/ext/api/wordpress/inventories?token='+api;
-                var req = new XMLHttpRequest();
-                req.open('GET', url_call);
-                req.onreadystatechange = function(){
-                    if (this.status == 200 && this.readyState == 4) {
-                        var data = JSON.parse(this.responseText);
-                        $.each(data.inventories, function(k, v) {
-                            $('#filter_inventory').append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
-                        });
-                        if (getCookie('wrklst_filter_inventory'))
-                            $('#filter_inventory', form).val(getCookie('wrklst_filter_inventory'));
-                        form.submit();
-                    }
-                };
-                req.send();
+                $.getJSON( url_call, function( data ) {
+                    $.each(data.inventories, function(k, v) {
+                        $('#filter_inventory').append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
+                    });
+                    if (getCookie('wrklst_filter_inventory'))
+                        $('#filter_inventory', form).val(getCookie('wrklst_filter_inventory'));
+                    form.submit();
+                });
             }
 
             //get images for one page from wrklst
-            function request_api(){
+            function request_api() {
                 //prevent double page loading
                 url_call = wrklst_url+'/ext/api/wordpress/?token='+api
                     +'&work_status='+work_status
@@ -165,20 +159,14 @@ media.view.wlWork = media.View.extend({
                 {
                     return false;
                 }
-                var req = new XMLHttpRequest();
-                req.open('GET', url_call);
-                req.onreadystatechange = function(){
-                    if (this.status == 200 && this.readyState == 4) {
-                        var data = JSON.parse(this.responseText);
-                        if (!(data.totalHits > 0)) {
-                            $('#wrklst_results').html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No matches ——</div>');
-                            $('#show_animation').remove();
-                            return false;
-                        }
-                        check_existing(data);
+                $.getJSON( url_call, function( data ) {
+                    if (!(data.totalHits > 0)) {
+                        $('#wrklst_results').html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No matches ——</div>');
+                        $('#show_animation').remove();
+                        return false;
                     }
-                };
-                req.send();
+                    check_existing(data);
+                });
                 return false;
             }
 

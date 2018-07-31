@@ -9,20 +9,23 @@
     $.fn.flexImages = function(options){
         var o = $.extend({ container: '.item:not(.hidden)', object: 'img', rowHeight: 180, maxRows: 0, truncate: 0 }, options);
         return this.each(function(){
-            var grid = $(this), containers = $(grid).find(o.container), items = [], t = new Date().getTime(),
-                s = window.getComputedStyle ? getComputedStyle(containers[0], null) : containers[0].currentStyle;
-            o.margin = (parseInt(s.marginLeft) || 0) + (parseInt(s.marginRight) || 0) + (Math.round(parseFloat(s.borderLeftWidth)) || 0) + (Math.round(parseFloat(s.borderRightWidth)) || 0);
-            for (j=0;j<containers.length;j++) {
-                var c = containers[j],
-                    w = parseInt(c.getAttribute('data-w')),
-                    norm_w = w*(o.rowHeight/parseInt(c.getAttribute('data-h'))), // normalized width
-                    obj = $(c).find(o.object);
-                items.push([c, w, norm_w, obj, obj.data('src')]);
+            if($(this).find(o.container)[0] instanceof Element)
+            {
+                var grid = $(this), containers = $(grid).find(o.container), items = [], t = new Date().getTime(),
+                    s = window.getComputedStyle ? getComputedStyle(containers[0], null) : containers[0].currentStyle;
+                o.margin = (parseInt(s.marginLeft) || 0) + (parseInt(s.marginRight) || 0) + (Math.round(parseFloat(s.borderLeftWidth)) || 0) + (Math.round(parseFloat(s.borderRightWidth)) || 0);
+                for (j=0;j<containers.length;j++) {
+                    var c = containers[j],
+                        w = parseInt(c.getAttribute('data-w')),
+                        norm_w = w*(o.rowHeight/parseInt(c.getAttribute('data-h'))), // normalized width
+                        obj = $(c).find(o.object);
+                    items.push([c, w, norm_w, obj, obj.data('src')]);
+                }
+                makeGrid(grid, items, o);
+                $(o.listenContainer).off('resize.flexImages'+grid.data('flex-t'));
+                $(o.listenContainer).on('resize.flexImages'+t, function(){ makeGrid(grid, items, o); });
+                grid.data('flex-t', t);
             }
-            makeGrid(grid, items, o);
-            $(o.listenContainer).off('resize.flexImages'+grid.data('flex-t'));
-            $(o.listenContainer).on('resize.flexImages'+t, function(){ makeGrid(grid, items, o); });
-            grid.data('flex-t', t)
         });
     }
 
