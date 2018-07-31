@@ -111,6 +111,7 @@ if (isset($_POST['wrklst_check_existing'])) {
                     }
                 }
             }
+            $wrklst_data['hits'][$k]['wpnonce'] = wp_create_nonce('wrklst_security_nonce');
             $wrklst_data['hits'][$k]['exists'] = 0;
             if(isset($wrklst_data['hits'][$k]['imgs']) && $exists_count==count($wrklst_data['hits'][$k]['imgs']))
                 $wrklst_data['hits'][$k]['exists'] = 2;
@@ -204,7 +205,7 @@ if (isset($_POST['wrklst_upload'])) {
         'post_content'   => '',
         'post_status' => 'inherit'
 	);
-    $attach_id = wp_insert_attachment($attachment, $target_file_name, 0);
+    $attach_id = @wp_insert_attachment($attachment, $target_file_name, 0);
     if ($attach_id == 0) die('Error: File attachment error');
 
 	$attach_data = wp_generate_attachment_metadata($attach_id, $target_file_name);
@@ -215,7 +216,7 @@ if (isset($_POST['wrklst_upload'])) {
 	$image_data = array();
 	$image_data['ID'] = $attach_id;
 	$image_data['post_excerpt'] = $attachment_caption;
-	wp_update_post($image_data);
+	@wp_update_post($image_data);
 
     update_post_meta( $attach_id, 'wrklst_id', $_POST['import_source_id'] );
     update_post_meta( $attach_id, 'wrklst_image_id', $_POST['image_id'] );
@@ -223,6 +224,6 @@ if (isset($_POST['wrklst_upload'])) {
     update_post_meta( $attach_id, 'wrklst_artist_name', $_POST['artist'] );
     update_post_meta( $attach_id, 'wrklst_inv_nr', $_POST['invnr'] );
 
-	echo $attach_id;
+    wp_send_json(['id'=>$attach_id],200);
     exit;
 }

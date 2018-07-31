@@ -17,7 +17,7 @@ class Enqueue extends BaseController
         wp_enqueue_style('wrklstStyle',$this->plugin_url.'assets/style.css');
         wp_enqueue_script('wrklstScript',$this->plugin_url.'assets/admin.js');
         wp_enqueue_script('wrklstScript2',$this->plugin_url.'assets/debounce.js');
-        wp_enqueue_script('wl-media-upload-extension-post',$this->plugin_url.'assets/media_upload_extension.post.js',array( 'jquery' ), '', true);
+        //wp_enqueue_script('wl-media-upload-extension-post',$this->plugin_url.'assets/media_upload_extension.post.js',array( 'jquery' ), '', true);
         wp_enqueue_script('wl-media-upload-extension-select',$this->plugin_url.'assets/media_upload_extension.select.js',array( 'jquery' ), '', true);
     }
 }
