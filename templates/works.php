@@ -262,7 +262,7 @@ echo '<h1>WrkLst Works</h1>';
             jQuery(window).scroll(scrollHandler);
         }
 
-        jQuery('.flex-images').flexImages({rowHeight: 260});
+        jQuery('.flex-images').flexImages({rowHeight: 260,listenContainer:window});
     }
 
     jQuery("#wrklst_results").on('click', '.upload.multiimg', function() {
@@ -275,7 +275,7 @@ echo '<h1>WrkLst Works</h1>';
         jQuery( ".itemid"+jQuery(this).data('import_source_id') ).each(function( index ) {
             jQuery( this ).toggleClass( "open" );
         });
-        jQuery('.flex-images').flexImages({rowHeight: 260});
+        jQuery('.flex-images').flexImages({rowHeight: 260,listenContainer:window});
     });
     jQuery("#wrklst_results").on('click', '.upload:not(.doneuploading)', function() {
         if(!jQuery(this).hasClass('uploading')&&!jQuery(this).hasClass('doneuploading')&&!jQuery(this).hasClass('multiimg'))

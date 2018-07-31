@@ -20,8 +20,8 @@
                 items.push([c, w, norm_w, obj, obj.data('src')]);
             }
             makeGrid(grid, items, o);
-            $(window).off('resize.flexImages'+grid.data('flex-t'));
-            $(window).on('resize.flexImages'+t, function(){ makeGrid(grid, items, o); });
+            $(o.listenContainer).off('resize.flexImages'+grid.data('flex-t'));
+            $(o.listenContainer).on('resize.flexImages'+t, function(){ makeGrid(grid, items, o); });
             grid.data('flex-t', t)
         });
     }

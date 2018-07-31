@@ -37,6 +37,22 @@ if(class_exists('Inc\\Init')) {
     Inc\Init::register_services();
 }
 
+
+
+if (isset($_POST['wrklst_api_cred'])) {
+    if (!function_exists('wp_verify_nonce'))
+        require_once(ABSPATH.'wp-includes/pluggable.php');
+    if(!is_user_logged_in())die('Not logged in.');
+    if( !current_user_can('editor') && !current_user_can('administrator') )die('No succifient rights.');
+    $wrklst_settings = get_option('wrklst_options');
+
+    wp_send_json([
+        'wrklst_nonce' => wp_create_nonce('wrklst_security_nonce'),
+        'wrklst_settings' => $wrklst_settings,
+    ],200);
+    exit;
+}
+
 if (isset($_POST['wrklst_check_existing'])) {
     if (!function_exists('wp_verify_nonce'))
         require_once(ABSPATH.'wp-includes/pluggable.php');
