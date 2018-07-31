@@ -45,6 +45,7 @@ media.view.MediaFrame.Select.prototype.wlworkContent = function( content ){
 media.view.wlWork = media.View.extend({
     tagName:   'div',
     className: 'wl-work',
+    id: 'wlworkcontainer',
     initialize: function() {
         _.defaults( this.options, {});
         var self = this;

@@ -266,7 +266,7 @@ $wrklst_settings = get_option('wrklst_options');
         jQuery('#show_animation').remove();
         if (page < pages) {
             jQuery('#wrklst_results').after('<div id="show_animation" style="clear:both;padding:15px 0 0;text-align:center"><img style="width:60px" src="<?= plugin_dir_url(__FILE__).'../assets/img/baseline-autorenew-24px.svg' ?>" class="loading-rotator"></div>');
-            jQuery(window).scroll(scrollHandler);
+            jQuery('.media-frame-content').first().scroll(scrollHandler);
         }
 
         jQuery('.flex-images').flexImages({rowHeight: 260});

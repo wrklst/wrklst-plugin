@@ -126,11 +126,11 @@ class SettingsApi
     		'set_featured_image'    => __( 'Set featured image', 'wrklst_plugin' ),
     		'remove_featured_image' => __( 'Remove featured image', 'wrklst_plugin' ),
     		'use_featured_image'    => __( 'Use as featured image', 'wrklst_plugin' ),
-    		'insert_into_item'      => __( 'Insert into event', 'wrklst_plugin' ),
-    		'uploaded_to_this_item' => __( 'Uploaded to this event', 'wrklst_plugin' ),
+    		'insert_into_item'      => __( 'Insert into Artist', 'wrklst_plugin' ),
+    		'uploaded_to_this_item' => __( 'Uploaded to this Artist', 'wrklst_plugin' ),
     		'items_list'            => __( 'Artists list', 'wrklst_plugin' ),
     		'items_list_navigation' => __( 'Artists list navigation', 'wrklst_plugin' ),
-    		'filter_items_list'     => __( 'Filter events list', 'wrklst_plugin' ),
+    		'filter_items_list'     => __( 'Filter Artists list', 'wrklst_plugin' ),
     	);
     	$args = array(
     		'label'                 => __( 'Artist', 'wrklst_plugin' ),
@@ -179,11 +179,11 @@ class SettingsApi
     		'set_featured_image'    => __( 'Set featured image', 'wrklst_plugin' ),
     		'remove_featured_image' => __( 'Remove featured image', 'wrklst_plugin' ),
     		'use_featured_image'    => __( 'Use as featured image', 'wrklst_plugin' ),
-    		'insert_into_item'      => __( 'Insert into event', 'wrklst_plugin' ),
-    		'uploaded_to_this_item' => __( 'Uploaded to this event', 'wrklst_plugin' ),
+    		'insert_into_item'      => __( 'Insert into Exhibition', 'wrklst_plugin' ),
+    		'uploaded_to_this_item' => __( 'Uploaded to this Exhibition', 'wrklst_plugin' ),
     		'items_list'            => __( 'Exhibitions list', 'wrklst_plugin' ),
     		'items_list_navigation' => __( 'Exhibitions list navigation', 'wrklst_plugin' ),
-    		'filter_items_list'     => __( 'Filter events list', 'wrklst_plugin' ),
+    		'filter_items_list'     => __( 'Filter Exhibitions list', 'wrklst_plugin' ),
     	);
     	$args = array(
     		'label'                 => __( 'Exhibition', 'wrklst_plugin' ),
@@ -232,11 +232,11 @@ class SettingsApi
     		'set_featured_image'    => __( 'Set featured image', 'wrklst_plugin' ),
     		'remove_featured_image' => __( 'Remove featured image', 'wrklst_plugin' ),
     		'use_featured_image'    => __( 'Use as featured image', 'wrklst_plugin' ),
-    		'insert_into_item'      => __( 'Insert into event', 'wrklst_plugin' ),
-    		'uploaded_to_this_item' => __( 'Uploaded to this event', 'wrklst_plugin' ),
+    		'insert_into_item'      => __( 'Insert into Art Fair', 'wrklst_plugin' ),
+    		'uploaded_to_this_item' => __( 'Uploaded to this Art Fair', 'wrklst_plugin' ),
     		'items_list'            => __( 'Art Fairs list', 'wrklst_plugin' ),
     		'items_list_navigation' => __( 'Art Fairs list navigation', 'wrklst_plugin' ),
-    		'filter_items_list'     => __( 'Filter events list', 'wrklst_plugin' ),
+    		'filter_items_list'     => __( 'Filter Art Fairs list', 'wrklst_plugin' ),
     	);
     	$args = array(
     		'label'                 => __( 'Art Fair', 'wrklst_plugin' ),
