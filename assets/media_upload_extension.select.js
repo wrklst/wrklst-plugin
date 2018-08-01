@@ -233,10 +233,6 @@ media.view.wlWork = media.View.extend({
                     $('#wrklst_results').after('<div id="show_animation" style="clear:both;padding:15px 0 0;text-align:center"><img style="width:60px" src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-autorenew-24px.svg" class="loading-rotator"></div>');
                     $('.media-frame-content').first().scroll(scrollHandler);
                 }
-
-                setTimeout(function(){
-                    $('.flex-images').flexImages({rowHeight: 260,listenContainer:'#wlworkcontainer'});
-                }, 100);
             }
 
             //trigger multi image display to show subimages
@@ -250,10 +246,6 @@ media.view.wlWork = media.View.extend({
                 $( ".itemid"+$(this).data('import_source_id') ).each(function( index ) {
                     $( this ).toggleClass( "open" );
                 });
-
-                setTimeout(function(){
-                    $('.flex-images').flexImages({rowHeight: 260,listenContainer:'#wlworkcontainer'});
-                }, 100);
             });
 
             //trigger upload of images

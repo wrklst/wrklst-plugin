@@ -16,8 +16,8 @@ echo '<h1>WrkLst Works</h1>';
     [placeholder] { text-overflow: ellipsis; }
 
     .flex-images { overflow: hidden; }
-    .flex-images .item { float: left; margin: 4px; background: #f3f3f3; box-sizing: content-box; overflow: hidden; position: relative; }
-    .flex-images .item > img { display: block; width: auto; height: 100%; }
+    .flex-images .item { margin: 4px; background: #f3f3f3; box-sizing: content-box; overflow: hidden; position: relative; }
+    .flex-images .item > img { width: auto; height: auto; max-width: 100%; max-height: 100%; }
     .flex-images .item > .wrktitle { display: block; position:absolute; text-align: left; left:0; top: 0px; background: rgba(255,255,255,.80); color: #000; padding: 3px 5px 3px 5px;}
 
     .flex-images .item.exists > .wrktitle { background: rgba(242, 150, 150,.80); }
@@ -36,7 +36,7 @@ echo '<h1>WrkLst Works</h1>';
     .flex-images .dlimg img { position: absolute; top: 30%; left: 0; right: 0; margin: auto; height: 70px; opacity: .2; }
     .flex-images .dlimg .caption { position: absolute; left: 0; right: 0; bottom: 15px; padding: 0 5px; text-align: left;}
     .flex-images .dlimg a { color: #eee; }
-    .flex-images div.subitem > img { width:90% !important;height:90% !important;display: inline-block !important;position: relative;top:5%;}
+    .flex-images div.subitem > img { max-width: 90%; max-height: 90%; }
     .flex-images div.subitem { background: #ccc !important; text-align: center;}
     .flex-images div.breaker {
         background: rgba(242, 150, 150,1);
@@ -70,7 +70,20 @@ echo '<h1>WrkLst Works</h1>';
         from {transform: rotate(0deg);}
         to {transform: rotate(360deg);}
     }
+
+    .flex-images {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .flex-images .item {
+        flex: 1 1 260px;
+        height: 260px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
+
 <div style="padding:10px 10px 10px 0px">
     <form id="wrklst_form" style="margin:0">
         <div style="line-height:1.5;margin:1em 0;max-width:500px;position:relative">
@@ -87,7 +100,7 @@ echo '<h1>WrkLst Works</h1>';
             <a id="wrklst_settings_icon" href="admin.php?page=wrklst_settings"><img style="position:relative;top:5px" src="<?= plugin_dir_url(__FILE__).'../assets/img/baseline-settings-20px.svg' ?>" title="Settings" width="20px"></a>
         </div>
     </form>
-    <div id="wrklst_results" class="flex-images" style="margin-top:20px;padding-top:25px;border-top:1px solid #ddd"></div>
+    <div id="wrklst_results" class="flex-images" style="margin-top:15px;"></div>
 </div>
 <script>
     function getCookie(key) {
@@ -261,8 +274,6 @@ echo '<h1>WrkLst Works</h1>';
             jQuery('#wrklst_results').after('<div id="show_animation" style="clear:both;padding:15px 0 0;text-align:center"><img style="width:60px" src="<?= plugin_dir_url(__FILE__).'../assets/img/baseline-autorenew-24px.svg' ?>" class="loading-rotator"></div>');
             jQuery(window).scroll(scrollHandler);
         }
-
-        jQuery('.flex-images').flexImages({rowHeight: 260,listenContainer:window});
     }
 
     jQuery("#wrklst_results").on('click', '.upload.multiimg', function() {
@@ -275,7 +286,6 @@ echo '<h1>WrkLst Works</h1>';
         jQuery( ".itemid"+jQuery(this).data('import_source_id') ).each(function( index ) {
             jQuery( this ).toggleClass( "open" );
         });
-        jQuery('.flex-images').flexImages({rowHeight: 260,listenContainer:window});
     });
     jQuery("#wrklst_results").on('click', '.upload:not(.doneuploading)', function() {
         if(!jQuery(this).hasClass('uploading')&&!jQuery(this).hasClass('doneuploading')&&!jQuery(this).hasClass('multiimg'))

@@ -19,8 +19,8 @@ $wrklst_settings = get_option('wrklst_options');
     [placeholder] { text-overflow: ellipsis; }
 
     .flex-images { overflow: hidden; }
-    .flex-images .item { float: left; margin: 4px; background: #f3f3f3; box-sizing: content-box; overflow: hidden; position: relative; }
-    .flex-images .item > img { display: block; width: auto; height: 100%; }
+    .flex-images .item { margin: 4px; background: #f3f3f3; box-sizing: content-box; overflow: hidden; position: relative; }
+    .flex-images .item > img { width: auto; height: auto; max-width: 100%; max-height: 100%; }
     .flex-images .item > .wrktitle { display: block; position:absolute; text-align: left; left:0; top: 0px; background: rgba(255,255,255,.80); color: #000; padding: 3px 5px 3px 5px;}
 
     .flex-images .item.exists > .wrktitle { background: rgba(242, 150, 150,.80); }
@@ -39,7 +39,7 @@ $wrklst_settings = get_option('wrklst_options');
     .flex-images .dlimg img { position: absolute; top: 30%; left: 0; right: 0; margin: auto; height: 70px; opacity: .2; }
     .flex-images .dlimg .caption { position: absolute; left: 0; right: 0; bottom: 15px; padding: 0 5px; text-align: left;}
     .flex-images .dlimg a { color: #eee; }
-    .flex-images div.subitem > img { width:90% !important;height:90% !important;display: inline-block !important;position: relative;top:5%;}
+    .flex-images div.subitem > img { max-width: 90%; max-height: 90%; }
     .flex-images div.subitem { background: #ccc !important; text-align: center;}
     .flex-images div.breaker {
         background: rgba(242, 150, 150,1);
@@ -73,6 +73,18 @@ $wrklst_settings = get_option('wrklst_options');
         from {transform: rotate(0deg);}
         to {transform: rotate(360deg);}
     }
+
+    .flex-images {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .flex-images .item {
+        flex: 1 1 260px;
+        height: 260px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
 
 <div style="padding:10px 10px 10px 10px">
@@ -90,5 +102,5 @@ $wrklst_settings = get_option('wrklst_options');
             <label style="margin-left:15px;margin-right:15px;white-space:nowrap"><input type="checkbox" id="filter_available">Available only</label>
         </div>
     </form>
-    <div id="wrklst_results" class="flex-images" style="margin-top:20px;padding-top:25px;border-top:1px solid #ddd"></div>
+    <div id="wrklst_results" class="flex-images" style="margin-top:15px;"></div>
 </div>

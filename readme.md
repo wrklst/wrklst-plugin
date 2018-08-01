@@ -16,5 +16,4 @@ Transfer images and captions from your WrkLst Artwork Inventory seamlessly into 
 == Attribution / Thanks to ==
 
 - Parts of this plugin are based on [Pixabay Images](https://pixabay.com/blog/posts/p-50/), published under the GPLv2 License.
-- This plugin uses jQuery flexImages v1.0.4; Copyright (c) 2014 Simon Steinberger / Pixabay; GitHub: https://github.com/Pixabay/jQuery-flexImages.
 - Icons from https://material.io/tools/icons/ under Apache license version 2.0.
