@@ -96,6 +96,39 @@ class Admin extends BaseController
                     'label_for' => 'api-id',
                     'class' => 'api-id-class',
                 ],
+            ],
+            [
+                'id'        => 'cpt-artist',
+                'title'     => 'CPT Artist',
+                'callback'  => [$this->callbacks,'wrklstCustomPostTypeArtist'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section',
+                'args'      => [
+                    'label_for' => 'cptartist',
+                    'class' => 'cpt-artist-class',
+                ],
+            ],
+            [
+                'id'        => 'cpt-exhibition',
+                'title'     => 'CPT Exhibition',
+                'callback'  => [$this->callbacks,'wrklstCustomPostTypeExhibition'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section',
+                'args'      => [
+                    'label_for' => 'cptexhibition',
+                    'class' => 'cpt-exhibition-class',
+                ],
+            ],
+            [
+                'id'        => 'cpt-artfair',
+                'title'     => 'CPT Art Fair',
+                'callback'  => [$this->callbacks,'wrklstCustomPostTypeArtFair'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section',
+                'args'      => [
+                    'label_for' => 'cptartfair',
+                    'class' => 'cpt-artfair-class',
+                ],
             ]
         ];
 
