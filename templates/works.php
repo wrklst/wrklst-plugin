@@ -16,7 +16,7 @@ echo '<h1>WrkLst Works</h1>';
 [placeholder] { text-overflow: ellipsis; }
 
 .flex-images { overflow: hidden; }
-.flex-images .item { margin: 4px; background: #f3f3f3; box-sizing: content-box; overflow: hidden; position: relative; }
+.flex-images .item { margin: 4px; background: #FFF; box-sizing: content-box; overflow: hidden; position: relative; }
 .flex-images .item > img { width: auto; height: auto; max-width: 100%; max-height: 100%; }
 .flex-images .item > .wrktitle { display: block; position:absolute; text-align: left; left:0; top: 0px; background: rgba(255,255,255,.80); color: #000; padding: 3px 5px 3px 5px;}
 
@@ -84,7 +84,7 @@ img.hide-img {
 }
 </style>
 
-<div style="padding:10px 10px 10px 0px">
+<div style="padding:10px 10px 10px 0px;">
     <form id="wrklst_form" style="margin:0">
         <div style="line-height:1.5;margin:1em 0;max-width:500px;position:relative">
             <input id="search_query" type="text" value="" style="width:100%;padding:7px 32px 7px 9px" autofocus placeholder="Search for e.g. Agnes Martin AM102">
