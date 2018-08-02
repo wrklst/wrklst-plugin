@@ -15,5 +15,5 @@ Transfer images and captions from your WrkLst Artwork Inventory seamlessly into 
 
 == Attribution / Thanks to ==
 
-- Parts of this plugin are based on [Pixabay Images](https://pixabay.com/blog/posts/p-50/), published under the GPLv2 License.
+- Parts of this plugin are inspired by [Pixabay Images](https://pixabay.com/blog/posts/p-50/), published under the GPLv2 License.
 - Icons from https://material.io/tools/icons/ under Apache license version 2.0.
