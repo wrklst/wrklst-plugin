@@ -75,8 +75,6 @@ media.view.wlWork = media.View.extend({
                 search_query = '',
                 page = 1,
                 work_status = false,
-                api = false,
-                account = false,
                 last_call = '',
                 wrklst_security_nonce = false,
                 wrklst_url = 'https://app.wrklst.com';
@@ -86,12 +84,7 @@ media.view.wlWork = media.View.extend({
                 $.post('.', {
                     wrklst_api_cred: "1",
                 }, function(data){
-                    api = data.wrklst_settings.api;
-                    account = data.wrklst_settings.account;
-                    wrklst_url = 'https://'+account+'.wrklst.com';
                     wrklst_security_nonce = data.wrklst_nonce;
-
-                    //initiate inventory and first api call
                     get_inventories();
                 });
             }
@@ -110,7 +103,6 @@ media.view.wlWork = media.View.extend({
             form.submit(function(e){
                 page = 1;
                 e.preventDefault();
-                if(!api) return false;
                 search_query = $('#search_query', form).val();
                 if ($('#filter_available', form).is(':checked')) work_status = 'available';
                 $('#wrklst_results').html('');
@@ -135,8 +127,10 @@ media.view.wlWork = media.View.extend({
 
             //get inventories from wrklst
             function get_inventories() {
-                url_call = wrklst_url+'/ext/api/wordpress/inventories?token='+api;
-                $.getJSON( url_call, function( data ) {
+                $.post('.', {
+                    wrklst_get_inventories: 1,
+                    wpnonce: wrklst_security_nonce
+                }, function(data){
                     $.each(data.inventories, function(k, v) {
                         $('#filter_inventory').append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
                     });
@@ -149,36 +143,30 @@ media.view.wlWork = media.View.extend({
             //get images for one page from wrklst
             function request_api() {
                 //prevent double page loading
-                url_call = wrklst_url+'/ext/api/wordpress/?token='+api
-                    +'&work_status='+work_status
-                    +'&per_page='+per_page
-                    +'&page='+page
-                    +'&inv_sec_id='+$('#filter_inventory', form).val()
-                    +'&search='+encodeURIComponent(search_query);
+                url_call = work_status+'|'+per_page+'|'+page+'|'+$('#filter_inventory', form).val()+'|'+encodeURIComponent(search_query)+'|'+wrklst_security_nonce;
                 if(last_call===url_call)
                 {
                     return false;
                 }
-                $.getJSON( url_call, function( data ) {
+
+                $.post('.', {
+                    wrklst_get_inv_items: 1,
+                    work_status: work_status,
+                    per_page: per_page,
+                    page: page,
+                    inv_sec_id: $('#filter_inventory', form).val(),
+                    search: encodeURIComponent(search_query),
+                    wpnonce: wrklst_security_nonce
+                }, function(data){
                     if (!(data.totalHits > 0)) {
                         $('#wrklst_results').html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No matches ——</div>');
                         $('#show_animation').remove();
                         return false;
                     }
-                    check_existing(data);
+                    render_results(data);
+                    last_call = url_call;
                 });
                 return false;
-            }
-
-            //funnel wrklst image results through existing decorator, to mark works as already downloaded, if they have been
-            function check_existing(wrklst_data) {
-                $.post('.', {
-                    wrklst_check_existing: "1",
-                    wrklst_data: wrklst_data,
-                    wpnonce: wrklst_security_nonce
-                }, function(return_data){
-                    render_results(return_data);
-                });
             }
 
             //render image results into dom

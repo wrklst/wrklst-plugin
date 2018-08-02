@@ -44,16 +44,15 @@ if (isset($_POST['wrklst_api_cred'])) {
         require_once(ABSPATH.'wp-includes/pluggable.php');
     if(!is_user_logged_in())die('Not logged in.');
     if( !current_user_can('editor') && !current_user_can('administrator') )die('No succifient rights.');
-    $wrklst_settings = get_option('wrklst_options');
-
     wp_send_json([
         'wrklst_nonce' => wp_create_nonce('wrklst_security_nonce'),
-        'wrklst_settings' => $wrklst_settings,
     ],200);
     exit;
 }
 
-if (isset($_POST['wrklst_check_existing'])) {
+
+
+if (isset($_POST['wrklst_get_inventories'])) {
     if (!function_exists('wp_verify_nonce'))
         require_once(ABSPATH.'wp-includes/pluggable.php');
 
@@ -62,11 +61,71 @@ if (isset($_POST['wrklst_check_existing'])) {
         die('Error: Invalid request.');
 		exit;
 	}
-    if(isset($_POST['wrklst_data']['hits']) && count($_POST['wrklst_data']['hits']))
+
+    if(!is_user_logged_in())die('Not logged in.');
+    if( !current_user_can('editor') && !current_user_can('administrator') )die('No succifient rights.');
+
+    $data = wp_cache_get( 'wrklst_inventories' );
+    if ( false === $data )
+    {
+        $wrklst_settings = get_option('wrklst_options');
+        $api_key = $wrklst_settings['api'];
+        $wrklst_url = 'https://'.$wrklst_settings['account'].'.wrklst.com';
+
+        $response = wp_remote_get($wrklst_url.'/ext/api/wordpress/inventories?token='.$api_key);
+        if( is_wp_error( $response ) ) {
+            return false; // Bail early
+        }
+        $body = wp_remote_retrieve_body( $response );
+        $data = json_decode( $body, true );
+
+        wp_cache_set( 'wrklst_inventories', $data, '', 240 );
+    }
+    wp_send_json($data,200);
+    exit;
+}
+
+if (isset($_POST['wrklst_get_inv_items'])) {
+    if (!function_exists('wp_verify_nonce'))
+        require_once(ABSPATH.'wp-includes/pluggable.php');
+
+	$nonce = $_POST['wpnonce'];
+	if (!wp_verify_nonce($nonce, 'wrklst_security_nonce')) {
+        die('Error: Invalid request.');
+		exit;
+	}
+
+    if(!is_user_logged_in())die('Not logged in.');
+    if( !current_user_can('editor') && !current_user_can('administrator') )die('No succifient rights.');
+    $wrklst_settings = get_option('wrklst_options');
+    $api_key = $wrklst_settings['api'];
+    $wrklst_url = 'https://'.$wrklst_settings['account'].'.wrklst.com';
+
+    $cache_key = 'wrklst_inv_req_'.$_POST['work_status'].'|'.$_POST['per_page'].'|'.$_POST['page'].'|'.$_POST['inv_sec_id'].'|'.$_POST['search'];
+    $data = wp_cache_get( $cache_key );
+    if ( false === $data )
+    {
+        $response = wp_remote_get(
+            $wrklst_url.'/ext/api/wordpress/?token='.$api_key
+                .'&work_status='.$_POST['work_status']
+                .'&per_page='.$_POST['per_page']
+                .'&page='.$_POST['page']
+                .'&inv_sec_id='.$_POST['inv_sec_id']
+                .'&search='.$_POST['search']);
+        if( is_wp_error( $response ) ) {
+            return false; // Bail early
+        }
+        $body = wp_remote_retrieve_body( $response );
+        $data = json_decode( $body, true );
+        wp_cache_set( $cache_key, $data, '', 30 );
+    }
+
+    $wrklst_data = [];
+    if(isset($data['hits']) && count($data['hits']))
     {
         $check_ids = [];
-        $wrklst_data = $_POST['wrklst_data'];
-        foreach($_POST['wrklst_data']['hits'] as $dataset)
+        $wrklst_data = $data;
+        foreach($data['hits'] as $dataset)
         {
             $check_ids[] = $dataset['import_source_id'];
         }
