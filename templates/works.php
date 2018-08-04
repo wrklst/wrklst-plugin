@@ -82,6 +82,12 @@ img.hide-img {
     justify-content: center;
     align-items: center;
 }
+
+.flex-images .item.ender .dlimg img {
+    position: relative !important;
+    top:35% !important;
+    left: 7% !important;
+}
 </style>
 
 <div style="padding:10px 10px 10px 0px;">

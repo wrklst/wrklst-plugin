@@ -85,6 +85,12 @@ $wrklst_settings = get_option('wrklst_options');
         justify-content: center;
         align-items: center;
     }
+
+    .flex-images .item.ender .dlimg img {
+        position: relative !important;
+        top:35% !important;
+        left: 7% !important;
+    }
 </style>
 
 <div style="padding:10px 10px 10px 10px">
