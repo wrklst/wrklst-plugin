@@ -196,7 +196,7 @@ media.view.wlWork = media.View.extend({
                                 +'<div class="wrktitle"><img src="/../wp-content/plugins/wrklst-plugin/assets/img/round-cloud_download-24px.svg"><bR />'+(v.imgs[i].exists?'<b>downloaded</b><br />':'')+'#'+v.inv_nr+'</div>'
                                 +'</div>';
                         }
-                        image_item += '<div class="item subitemid'+v.import_source_id+' hidden itemid'+v.import_source_id+' ender" data-w="165" data-h="1000">'
+                        image_item += '<div class="item subitem itemid'+v.import_source_id+' subitemid'+v.import_source_id+' upload multiimg hidden ender" data-w="165" data-h="1000" data-import_source_id="'+v.import_source_id+'">'
                             +'<img src="'+v.previewURL.replace('_150', '_340')+'" style="display:none !important;">'
                             +'<div class="dlimg">'
                                 +'<img src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-arrow_back_ios-24px.svg" class="open hide-img">'
