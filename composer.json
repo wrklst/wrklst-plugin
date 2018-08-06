@@ -10,7 +10,9 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {},
+    "require": {
+        "mustache/mustache": "dev-master"
+    },
     "autoload": {
         "psr-4": {
             "Inc\\": "./inc"

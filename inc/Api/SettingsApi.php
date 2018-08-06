@@ -272,5 +272,41 @@ class SettingsApi
             );
             register_post_type( 'wl_artfairs', $args );
         }
+
+        $labels = array(
+    		'name'               => 'WrkLst Biographies',
+    		'singular_name'      => 'WrkLst Biography',
+    		'menu_name'          => 'WrkLst Biographies',
+    		'name_admin_bar'     => 'WrkLst Biography',
+    		'add_new'            => 'Add New', 'book',
+    		'add_new_item'       => 'Add New Biography',
+    		'new_item'           => 'New Biography',
+    		'edit_item'          => 'Edit Biography',
+    		'view_item'          => 'View Biography',
+    		'all_items'          => 'All Biographies',
+    		'search_items'       => 'Search Biographies',
+    		'parent_item_colon'  => 'Parent Biographies:',
+    		'not_found'          => 'No biographies found.',
+    		'not_found_in_trash' => 'No biographies found in Trash.'
+    	);
+
+    	$args = array(
+    		'labels'             => $labels,
+            'description'        => 'A custom post type for WrkLst Biography.',
+    		'public'             => false,
+    		'publicly_queryable' => false,
+            'exclude_from_search'=> true,
+    		'show_ui'            => true,
+    		'show_in_menu'       => false,
+    		'query_var'          => true,
+    		'rewrite'            => array( 'slug' => 'wlbiography' ),
+    		'capability_type'    => 'post',
+    		'has_archive'        => true,
+    		'hierarchical'       => false,
+    		'menu_position'      => null,
+    		'supports'           => array( 'title', 'editor' )
+    	);
+
+    	register_post_type( 'wlbiography', $args );
     }
 }

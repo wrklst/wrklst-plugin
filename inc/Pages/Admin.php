@@ -66,6 +66,18 @@ class Admin extends BaseController
                 'title'     => 'API Connection to WrkLst',
                 'callback'  => [$this->callbacks,'wrklstAdminWlApiSection'],
                 'page'      => 'wrklst_settings',
+            ],
+            [
+                'id'        => 'wrklst_options_section2',
+                'title'     => 'Custom Post Types',
+                'callback'  => [$this->callbacks,'wrklstAdminWlApiSection2'],
+                'page'      => 'wrklst_settings',
+            ],
+            [
+                'id'        => 'wrklst_options_section3',
+                'title'     => 'Biography Webhook Connection',
+                'callback'  => [$this->callbacks,'wrklstAdminWlApiSection3'],
+                'page'      => 'wrklst_settings',
             ]
         ];
 
@@ -88,7 +100,7 @@ class Admin extends BaseController
             ],
             [
                 'id'        => 'api-id',
-                'title'     => 'API Key',
+                'title'     => 'WrkLst API Key',
                 'callback'  => [$this->callbacks,'wrklstApiKey'],
                 'page'      => 'wrklst_settings',
                 'section'   => 'wrklst_options_section',
@@ -102,7 +114,7 @@ class Admin extends BaseController
                 'title'     => 'CPT Artist',
                 'callback'  => [$this->callbacks,'wrklstCustomPostTypeArtist'],
                 'page'      => 'wrklst_settings',
-                'section'   => 'wrklst_options_section',
+                'section'   => 'wrklst_options_section2',
                 'args'      => [
                     'label_for' => 'cptartist',
                     'class' => 'cpt-artist-class',
@@ -113,7 +125,7 @@ class Admin extends BaseController
                 'title'     => 'CPT Exhibition',
                 'callback'  => [$this->callbacks,'wrklstCustomPostTypeExhibition'],
                 'page'      => 'wrklst_settings',
-                'section'   => 'wrklst_options_section',
+                'section'   => 'wrklst_options_section2',
                 'args'      => [
                     'label_for' => 'cptexhibition',
                     'class' => 'cpt-exhibition-class',
@@ -124,10 +136,43 @@ class Admin extends BaseController
                 'title'     => 'CPT Art Fair',
                 'callback'  => [$this->callbacks,'wrklstCustomPostTypeArtFair'],
                 'page'      => 'wrklst_settings',
-                'section'   => 'wrklst_options_section',
+                'section'   => 'wrklst_options_section2',
                 'args'      => [
                     'label_for' => 'cptartfair',
                     'class' => 'cpt-artfair-class',
+                ],
+            ],
+            [
+                'id'        => 'musformatbio',
+                'title'     => 'Biography Format',
+                'callback'  => [$this->callbacks,'wrklstBioFormat'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section3',
+                'args'      => [
+                    'label_for' => 'musformatbio',
+                    'class' => 'musformatbio-class',
+                ],
+            ],
+            [
+                'id'        => 'musformatnews',
+                'title'     => 'News Format',
+                'callback'  => [$this->callbacks,'wrklstNewsFormat'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section3',
+                'args'      => [
+                    'label_for' => 'musformatnews',
+                    'class' => 'musformatnews-class',
+                ],
+            ],
+            [
+                'id'        => 'whapikey',
+                'title'     => 'Webhook Auth Token',
+                'callback'  => [$this->callbacks,'wrklstWebhookApi'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section3',
+                'args'      => [
+                    'label_for' => 'whapikey',
+                    'class' => 'whapikey-class',
                 ],
             ]
         ];
