@@ -66,7 +66,7 @@ class AdminCallbacks extends BaseController
 
     public function wrklstAdminWlApiSection3()
     {
-        echo 'Settigns for connecting WrkLst Biographies Module with this wordpress webpage.';
+        echo 'Settings for connecting WrkLst Biographies Module with this wordpress webpage.';
     }
 
     public function wrklstAccountId()
