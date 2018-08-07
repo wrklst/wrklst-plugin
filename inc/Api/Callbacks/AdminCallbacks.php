@@ -25,6 +25,7 @@ class AdminCallbacks extends BaseController
         if ($input['cptartist']) $options['cptartist'] = $input['cptartist']; else $options['cptartist'] = 0;
         if ($input['cptexhibition']) $options['cptexhibition'] = $input['cptexhibition']; else $options['cptexhibition'] = 0;
         if ($input['cptartfair']) $options['cptartfair'] = $input['cptartfair']; else $options['cptartfair'] = 0;
+        if ($input['wlbiowebhook']) $options['wlbiowebhook'] = $input['wlbiowebhook']; else $options['wlbiowebhook'] = 0;
         if ($input['musformatbio']) $options['musformatbio'] = $input['musformatbio']; else $options['musformatbio'] = '<p><span class="wl-bio-header" style="color: #000000; text-transform: uppercase;"><strong>{{artist.display}}</strong></span></p>
 {{#categories}}
 {{#title}}
@@ -126,6 +127,18 @@ class AdminCallbacks extends BaseController
         }
 
         echo '<input type="checkbox" value="1" id="cptartfair" name="wrklst_options[cptartfair]"'.(($options['cptartfair'])?'checked':'').' />';
+    }
+
+    public function wrklstActivateWlBioWebhook()
+    {
+        $options = get_option('wrklst_options');
+        if(!isset($options['wlbiowebhook']))
+        {
+            $options = [];
+            $options['wlbiowebhook'] = 0;
+        }
+
+        echo '<input type="checkbox" value="1" id="wlbiowebhook" name="wrklst_options[wlbiowebhook]"'.(($options['wlbiowebhook'])?'checked':'').' />';
     }
 
     public function wrklstBioFormat()

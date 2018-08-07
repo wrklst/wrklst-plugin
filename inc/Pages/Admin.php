@@ -143,6 +143,17 @@ class Admin extends BaseController
                 ],
             ],
             [
+                'id'        => 'wlbiowebhook',
+                'title'     => 'Activate Bio Webhook Connection',
+                'callback'  => [$this->callbacks,'wrklstActivateWlBioWebhook'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section3',
+                'args'      => [
+                    'label_for' => 'wlbiowebhook',
+                    'class' => 'wlbiowebhook-class',
+                ],
+            ],
+            [
                 'id'        => 'musformatbio',
                 'title'     => 'Biography Format',
                 'callback'  => [$this->callbacks,'wrklstBioFormat'],
