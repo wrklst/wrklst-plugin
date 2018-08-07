@@ -188,7 +188,7 @@ if (isset($_POST['wrklst_get_inv_items'])) {
             }
             $wrklst_data['hits'][$k]['wpnonce'] = wp_create_nonce('wrklst_security_nonce');
             $wrklst_data['hits'][$k]['exists'] = 0;
-            if(isset($wrklst_data['hits'][$k]['imgs']) && $exists_count==count($wrklst_data['hits'][$k]['imgs']) && $exists_count>1)
+            if(isset($wrklst_data['hits'][$k]['imgs']) && $exists_count==count($wrklst_data['hits'][$k]['imgs']))
                 $wrklst_data['hits'][$k]['exists'] = 2;
             else if($exists_count)
                 $wrklst_data['hits'][$k]['exists'] = 1;
@@ -372,42 +372,75 @@ function wl_biography_shortcode($atts) {
     return '';
 }
 
-//webhook listener
+//webhook can be called from thisblog.com/?webhook-listener=wl-biography
 if(isset($_GET['webhook-listener']) && $_GET['webhook-listener'] == 'wl-biography')
 {
+
     $options = get_option('wrklst_options');
-    if(isset($options['wlbiowebhook']) && $options['wlbiowebhook'])
+    if(isset($options['wlbiowebhook']) && $options['wlbiowebhook'] && isset($options['whapikey']))
     {
         if(!is_admin()) {
-            function wl_biography_listener() {
-                //webhook can be called from thisblog.com/?webhook-listener=wl-biography
-                if(isset($_GET['webhook-listener']) && $_GET['webhook-listener'] == 'wl-biography')
+            function wl_biography_listener()
+            {
+                // retrieve the request's body and parse it as JSON
+                $body = @file_get_contents('php://input');
+                // grab the event information
+                $webhook_input = json_decode($body, true);
+
+                if($webhook_input)
                 {
-                    // retrieve the request's body and parse it as JSON
-                    $body = @file_get_contents('php://input');
-                    // grab the event information
-                    $webhook_input = json_decode($body, true);
-                    if($webhook_input)
-                    {
-                        $wrklst_options = get_option('wrklst_options');
+                    //authenticate token
+                    $options = get_option('wrklst_options');
+                    if(isset($webhook_input['token']) && isset($options['whapikey']) &&
+        				$webhook_input['token']==$options['whapikey'] && strlen($options['whapikey'])>30)
+        			{
+                        $m = new \Mustache_Engine(array('escape' => function($value) {
+                            if(str_replace('*[[DONOTESCAPE]]*','',$value)!=$value)
+                                return str_replace('*[[DONOTESCAPE]]*','',$value);
+                            //\Log::info($value);
+                            return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
+                        }));
 
-                        //authenticate token
-                        if(isset($webhook_input['token']) &&
-            				$webhook_input['token']==$wrklst_options['whapikey'] && strlen($wrklst_options['whapikey'])>30)
-            			{
-                            $wrklst_options['musformatbio'];
-                            $wrklst_options['musformatnews'];
+                        if(isset($webhook_input['artist']) && isset($webhook_input['categories']))
+        				{
+                            $post_id = 0;
 
-                            $m = new \Mustache_Engine(array('escape' => function($value) {
-                                if(str_replace('*[[DONOTESCAPE]]*','',$value)!=$value)
-                                    return str_replace('*[[DONOTESCAPE]]*','',$value);
-                                //\Log::info($value);
-                                return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
-                            }));
+                            $post_query = new WP_Query(array(
+                                'post_type' => 'wlbiography',
+                                'posts_per_page' => 1,
+                                'meta_query' => array( // wl_biography_data
+                                    array(
+                                        'key' => 'wl_biography_data',
+                                        'value' => (serialize(array("artist_id"=>(string)$webhook_input['artist']['id']))),
+                                        'compare' => '=',
+                                    )
+                                )
+                            ));
 
-                            if(isset($webhook_input['artist']) && isset($webhook_input['categories']))
-            				{
-                                $post_id = 0;
+                            if($post_query->post_count>0)
+                            {
+                                $post_id = $post_query->posts[0]->ID;
+                            }
+
+                            $content_bio = $m->render($options['musformatbio'], $webhook_input);
+
+                            $wl_biography_data = [];
+                            $wl_biography_data['artist_id'] = sanitize_text_field($webhook_input['artist']['id']);
+
+                            $post_id = wp_insert_post([
+                                'ID' => $post_id,
+                                'post_content' => wp_kses_post($content_bio),
+                                'post_title' => sanitize_text_field($webhook_input['artist']['display']),
+                                'post_name' => sanitize_text_field("WrkLst ".$webhook_input['artist']['display']." ".$webhook_input['artist']['id']),
+                                'post_status' => 'publish',
+                                'post_type' => 'wlbiography',
+                            ]);
+
+                            update_post_meta($post_id, 'wl_biography_data', $wl_biography_data);
+
+                            if(isset($webhook_input['news']))
+                            {
+                                $content_news = $m->render($options['musformatnews'], $webhook_input);
 
                                 $post_query = new WP_Query(array(
                                     'post_type' => 'wlbiography',
@@ -415,74 +448,36 @@ if(isset($_GET['webhook-listener']) && $_GET['webhook-listener'] == 'wl-biograph
                                     'meta_query' => array( // wl_biography_data
                                         array(
                                             'key' => 'wl_biography_data',
-                                            'value' => (serialize(array("artist_id"=>(string)$webhook_input['artist']['id']))),
+                                            'value' => (serialize(array("artist_id"=>"news"))),
                                             'compare' => '=',
                                         )
                                     )
                                 ));
-
+                                $post_id = 0;
                                 if($post_query->post_count>0)
                                 {
                                     $post_id = $post_query->posts[0]->ID;
                                 }
 
-                                $content_bio = $m->render($wrklst_options['musformatbio'], $webhook_input);
-
                                 $wl_biography_data = [];
-                                $wl_biography_data['artist_id'] = sanitize_text_field($webhook_input['artist']['id']);
+                                $wl_biography_data['artist_id'] = 'news';
 
                                 $post_id = wp_insert_post([
                                     'ID' => $post_id,
-                                    'post_content' => wp_kses_post($content_bio),
-                                    'post_title' => sanitize_text_field($webhook_input['artist']['display']),
-                                    'post_name' => sanitize_text_field("WrkLst ".$webhook_input['artist']['display']." ".$webhook_input['artist']['id']),
+                                    'post_content' => wp_kses_post($content_news),
+                                    'post_title' => 'News',
+                                    'post_name' => 'WrkLst News',
                                     'post_status' => 'publish',
                                     'post_type' => 'wlbiography',
                                 ]);
 
                                 update_post_meta($post_id, 'wl_biography_data', $wl_biography_data);
+                            }
 
-                                if(isset($webhook_input['news']))
-                                {
-                                    $content_news = $m->render($wrklst_options['musformatnews'], $webhook_input);
-
-                                    $post_query = new WP_Query(array(
-                                        'post_type' => 'wlbiography',
-                                        'posts_per_page' => 1,
-                                        'meta_query' => array( // wl_biography_data
-                                            array(
-                                                'key' => 'wl_biography_data',
-                                                'value' => (serialize(array("artist_id"=>"news"))),
-                                                'compare' => '=',
-                                            )
-                                        )
-                                    ));
-                                    $post_id = 0;
-                                    if($post_query->post_count>0)
-                                    {
-                                        $post_id = $post_query->posts[0]->ID;
-                                    }
-
-                                    $wl_biography_data = [];
-                                    $wl_biography_data['artist_id'] = 'news';
-
-                                    $post_id = wp_insert_post([
-                                        'ID' => $post_id,
-                                        'post_content' => wp_kses_post($content_news),
-                                        'post_title' => 'News',
-                                        'post_name' => 'WrkLst News',
-                                        'post_status' => 'publish',
-                                        'post_type' => 'wlbiography',
-                                    ]);
-
-                                    update_post_meta($post_id, 'wl_biography_data', $wl_biography_data);
-                                }
-
-                                //don't show webpage, to save resources, as the webhook was successfull
-                                die('1');
-            				}
-            			}
-                    }
+                            //don't show webpage, to save resources, as the webhook was successfull
+                            die('1');
+        				}
+        			}
                 }
             }
             add_action('init', 'wl_biography_listener');
