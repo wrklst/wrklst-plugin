@@ -188,7 +188,7 @@ if (isset($_POST['wrklst_get_inv_items'])) {
             }
             $wrklst_data['hits'][$k]['wpnonce'] = wp_create_nonce('wrklst_security_nonce');
             $wrklst_data['hits'][$k]['exists'] = 0;
-            if(isset($wrklst_data['hits'][$k]['imgs']) && $exists_count==count($wrklst_data['hits'][$k]['imgs']))
+            if(isset($wrklst_data['hits'][$k]['imgs']) && $exists_count==count($wrklst_data['hits'][$k]['imgs']) && $exists_count>1)
                 $wrklst_data['hits'][$k]['exists'] = 2;
             else if($exists_count)
                 $wrklst_data['hits'][$k]['exists'] = 1;
