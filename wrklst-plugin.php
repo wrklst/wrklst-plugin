@@ -4,7 +4,7 @@
 */
 /**
 * Plugin Name: WrkLst Plugin
-* Plugin URI: https://github.com/wrklst/wp-wrklst-plugin
+* Plugin URI: https://github.com/wrklst/wrklst-plugin
 * Description: Integrate your WrkLst Database with your Wordpress Website.
 * Version: 0.1
 * Author: Tobias Vielmetter-Diekmann
