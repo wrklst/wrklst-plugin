@@ -233,17 +233,17 @@ img.hide-img {
         $.each(data.hits, function(k, v) {
             var i=0;
             if(v.multi_img) {
-                image_item += '<div class="item itemid'+v.import_source_id+' upload multiimg'+(v.exists===2?' exists':(v.exists?' existsp':''))+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+v.largeImageURL+'" data-invnr="'+v.inv_nr+'" data-artist="'+v.name_artist+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imageId+'" data-import_inventory_id="'+v.import_inventory_id+'" data-caption="'+v.caption+v.photocredit+'" data-w="'+v.webformatWidth+'" data-h="'+v.webformatHeight+'">'
+                image_item += '<div class="item itemid'+v.import_source_id+' upload multiimg'+(v.exists===2?' exists':(v.exists?' existsp':''))+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+v.largeImageURL+'" data-invnr="'+v.inv_nr+'" data-artist="'+v.name_artist+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imageId+'" data-import_inventory_id="'+v.import_inventory_id+'" data-caption="'+v.caption+v.photocredit+'" data-description="'+v.description+'" data-alt="'+v.alt+'" data-w="'+v.webformatWidth+'" data-h="'+v.webformatHeight+'">'
                     +'<img src="'+v.previewURL.replace('_150', '_340')+'" title="#'+v.inv_nr+'" alt="#'+v.inv_nr+'">'
                     +'<div class="dlimg">'
                         +'<img src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-more_horiz-24px.svg" class="more">'
                         +'<img src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-arrow_forward_ios-24px.svg" class="open hide-img">'
                         +'<div class="caption">'+v.title+'</div>'
                     +'</div>'
-                    +'<div class="wrktitle"><img src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-more_horiz-24px.svg"><bR />'+(v.exists?'<b>'+(v.exists===2?'all':'partly')+' downloaded</b><br />':'')+'#'+v.inv_nr+'</div>'
+                    +'<div class="wrktitle"><img src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-more_horiz-24px.svg"><bR />'+(v.exists?'<b>'+(v.exists===2?'all':'partially')+' downloaded</b><br />':'')+'#'+v.inv_nr+'</div>'
                     +'</div>';
                 for(i=0;i<v.imgs.length;i++) {
-                    image_item += '<div class="subitem hidden subitemid'+v.import_source_id+' item upload'+(v.imgs[i].exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+v.imgs[i].largeImageURL+'" data-invnr="'+v.inv_nr+'" data-artist="'+v.name_artist+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imgs[i].id+'" data-import_inventory_id="'+v.import_inventory_id+'" data-caption="'+v.caption+v.imgs[i].photocredit+'" data-w="'+v.imgs[i].webformatWidth+'" data-h="'+v.imgs[i].webformatHeight+'">'
+                    image_item += '<div class="subitem hidden subitemid'+v.import_source_id+' item upload'+(v.imgs[i].exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+v.imgs[i].largeImageURL+'" data-invnr="'+v.inv_nr+'" data-artist="'+v.name_artist+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imgs[i].id+'" data-import_inventory_id="'+v.import_inventory_id+'" data-caption="'+v.caption+v.imgs[i].photocredit+'" data-description="'+v.description+'" data-alt="'+v.alt+'" data-w="'+v.imgs[i].webformatWidth+'" data-h="'+v.imgs[i].webformatHeight+'">'
                         +'<img src="'+v.imgs[i].previewURL.replace('_150', '_340')+'" title="#'+v.inv_nr+'" alt="#'+v.inv_nr+'">'
                         +'<div class="dlimg">'
                             +'<img src="/../wp-content/plugins/wrklst-plugin/assets/img/round-cloud_download-24px.svg">'
@@ -260,7 +260,7 @@ img.hide-img {
                     +'</div>';
             }
             else {
-                image_item += '<div class="item upload'+(v.exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+v.largeImageURL+'" data-invnr="'+v.inv_nr+'" data-artist="'+v.name_artist+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imageId+'" data-import_inventory_id="'+v.import_inventory_id+'" data-caption="'+v.caption+v.photocredit+'" data-w="'+v.webformatWidth+'" data-h="'+v.webformatHeight+'">'
+                image_item += '<div class="item upload'+(v.exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+v.largeImageURL+'" data-invnr="'+v.inv_nr+'" data-artist="'+v.name_artist+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imageId+'" data-import_inventory_id="'+v.import_inventory_id+'" data-caption="'+v.caption+v.photocredit+'" data-description="'+v.description+'" data-alt="'+v.alt+'" data-w="'+v.webformatWidth+'" data-h="'+v.webformatHeight+'">'
                     +'<img src="'+v.previewURL.replace('_150', '_340')+'" title="#'+v.inv_nr+'" alt="#'+v.inv_nr+'">'
                     +'<div class="dlimg">'
                         +'<img src="/../wp-content/plugins/wrklst-plugin/assets/img/round-cloud_download-24px.svg">'
@@ -299,6 +299,8 @@ img.hide-img {
                 wrklst_upload: "1",
                 image_url: $(this).data('url'),
                 image_caption: $(this).data('caption'),
+                image_description: $(this).data('description'),
+                image_alt: $(this).data('alt'),
                 title: $(this).data('title'),
                 invnr: $(this).data('invnr'),
                 artist: $(this).data('artist'),

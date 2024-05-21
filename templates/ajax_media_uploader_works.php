@@ -5,6 +5,8 @@ if ( !isset($wp_did_header) ) {
     wp();
 }
 
+
+
 if(!is_user_logged_in())die('Not logged in.');
 if( !current_user_can('editor') && !current_user_can('administrator') )die('No succifient rights.');
 

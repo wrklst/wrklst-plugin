@@ -92,7 +92,7 @@ class SettingsApi
         foreach($this->cf_settings as $setting)
             register_setting($setting['option_group'], $setting['option_name'], isset($setting['callback'])?$setting['callback']:'');
 
-        // add settings section
+        // add settigns section
         foreach($this->cf_sections as $section)
             add_settings_section($section['id'], $section['title'], isset($section['callback'])?$section['callback']:'', $section['page']);
 

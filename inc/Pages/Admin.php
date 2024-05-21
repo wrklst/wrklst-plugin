@@ -78,6 +78,12 @@ class Admin extends BaseController
                 'title'     => 'Biography Webhook Connection',
                 'callback'  => [$this->callbacks,'wrklstAdminWlApiSection3'],
                 'page'      => 'wrklst_settings',
+            ],
+            [
+                'id'        => 'wrklst_options_section4',
+                'title'     => 'Work Caption Settings',
+                'callback'  => [$this->callbacks,'wrklstAdminWlApiSection4'],
+                'page'      => 'wrklst_settings',
             ]
         ];
 
@@ -184,6 +190,17 @@ class Admin extends BaseController
                 'args'      => [
                     'label_for' => 'whapikey',
                     'class' => 'whapikey-class',
+                ],
+            ],
+            [
+                'id'        => 'workdcaptioninvnr',
+                'title'     => 'Include Inventory # in Caption',
+                'callback'  => [$this->callbacks,'wrklstWorkCaptionInvNr'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section4',
+                'args'      => [
+                    'label_for' => 'workdcaptioninvnr',
+                    'class' => 'workdcaptioninvnr-class',
                 ],
             ]
         ];

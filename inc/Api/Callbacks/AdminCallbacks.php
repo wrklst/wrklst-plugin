@@ -20,13 +20,13 @@ class AdminCallbacks extends BaseController
     public function wrklstOptionsGroup($input)
     {
         $options = get_option('wrklst_options');
-        if ($input['api']) $options['api'] = $input['api']; else $options['api'] = '';
-        if ($input['account']) $options['account'] = $input['account']; else $options['account'] = '';
-        if ($input['cptartist']) $options['cptartist'] = $input['cptartist']; else $options['cptartist'] = 0;
-        if ($input['cptexhibition']) $options['cptexhibition'] = $input['cptexhibition']; else $options['cptexhibition'] = 0;
-        if ($input['cptartfair']) $options['cptartfair'] = $input['cptartfair']; else $options['cptartfair'] = 0;
-        if ($input['wlbiowebhook']) $options['wlbiowebhook'] = $input['wlbiowebhook']; else $options['wlbiowebhook'] = 0;
-        if ($input['musformatbio']) $options['musformatbio'] = $input['musformatbio']; else $options['musformatbio'] = '<p><span class="wl-bio-header" style="color: #000000; text-transform: uppercase;"><strong>{{artist.display}}</strong></span></p>
+        if (isset($input['api']) && $input['api']) $options['api'] = $input['api']; else $options['api'] = '';
+        if (isset($input['account']) && $input['account']) $options['account'] = $input['account']; else $options['account'] = '';
+        if (isset($input['cptartist']) && $input['cptartist']) $options['cptartist'] = $input['cptartist']; else $options['cptartist'] = 0;
+        if (isset($input['cptexhibition']) && $input['cptexhibition']) $options['cptexhibition'] = $input['cptexhibition']; else $options['cptexhibition'] = 0;
+        if (isset($input['cptartfair']) && $input['cptartfair']) $options['cptartfair'] = $input['cptartfair']; else $options['cptartfair'] = 0;
+        if (isset($input['wlbiowebhook']) && $input['wlbiowebhook']) $options['wlbiowebhook'] = $input['wlbiowebhook']; else $options['wlbiowebhook'] = 0;
+        if (isset($input['musformatbio']) && $input['musformatbio']) $options['musformatbio'] = $input['musformatbio']; else $options['musformatbio'] = '<p><span class="wl-bio-header" style="color: #000000; text-transform: uppercase;"><strong>{{artist.display}}</strong></span></p>
 {{#categories}}
 {{#title}}
 <p><span class="wl-bio-header" style="color: #000000;text-transform: uppercase;"><strong>{{title}}</strong></span></p>
@@ -47,9 +47,9 @@ class AdminCallbacks extends BaseController
 {{/items}}
 <p> </p>
 {{/news}}';
-        if ($input['whapikey']) $options['whapikey'] = $input['whapikey']; else $options['whapikey'] = substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32);
-
-
+        if (isset($input['whapikey']) && $input['whapikey']) $options['whapikey'] = $input['whapikey']; else $options['whapikey'] = substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32);
+        
+        if (isset($input['workdcaptioninvnr']) && $input['workdcaptioninvnr']) $options['workdcaptioninvnr'] = $input['workdcaptioninvnr']; else $options['workdcaptioninvnr'] = 0;
 
         return $options;
     }
@@ -66,7 +66,12 @@ class AdminCallbacks extends BaseController
 
     public function wrklstAdminWlApiSection3()
     {
-        echo 'Settings for connecting WrkLst Biographies Module with this wordpress webpage.';
+        echo 'Settigns for connecting WrkLst Biographies Module with this wordpress webpage.';
+    }
+    
+    public function wrklstAdminWlApiSection4()
+    {
+        echo 'Settigns for Work Captions and what they include.';
     }
 
     public function wrklstAccountId()
@@ -198,5 +203,17 @@ class AdminCallbacks extends BaseController
             .'https://'.(isset($options['account'])&&$options['account']?$options['account']:'[your personal account slug]').'.wrklst.com/settings/generalaccount'
         .(isset($options['account'])&&$options['account']?'</a>':'').' and then to "Webhook Sync". <bR />
         Activate "Sync Biographies via Webhook with your webpage" and enter the following URL as well as your Bio Webhook Authentication Token:<br />'.get_site_url().'/?webhook-listener=wl-biography<br /><bR /><a href="/wp-admin/edit.php?post_type=wlbiography">Crated Biography Content Pages</a><br /><br />Example shortcode to include Biography in Wordpress: <strong>[wrklst_bio_content id=123]</strong> (id is the artist\'s id in WrkLst)<br /><br />';
+    }
+    
+    public function wrklstWorkCaptionInvNr()
+    {
+        $options = get_option('wrklst_options');
+        if(!isset($options['workdcaptioninvnr']))
+        {
+            $options = [];
+            $options['workdcaptioninvnr'] = 1;
+        }
+    
+        echo '<input type="checkbox" value="1" id="workdcaptioninvnr" name="wrklst_options[workdcaptioninvnr]"'.(($options['workdcaptioninvnr'])?'checked':'').' />';
     }
 }
