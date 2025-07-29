@@ -331,7 +331,7 @@ media.view.wlWork = media.View.extend({
             hits,
             search_query = '',
             page = 1,
-            work_status = false,
+            work_status = '',
             last_call = '',
             wrklst_security_nonce = false,
             wrklst_url = 'https://app.wrklst.com';
@@ -379,7 +379,7 @@ media.view.wlWork = media.View.extend({
             page = 1;
             e.preventDefault();
             search_query = $('#search_query', form).val();
-            work_status = $('#filter_available', form).is(':checked') ? 'available' : false;
+            work_status = $('#filter_available', form).is(':checked') ? 'available' : '';
             $('#wrklst_results', $container).html('');
             $('.media-frame-content').first().off('scroll', scrollHandler);
             request_api();

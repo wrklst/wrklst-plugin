@@ -254,7 +254,7 @@ jQuery(document).ready(function($) {
         hits,
         search_query = '',
         page = 1,
-        work_status = false,
+        work_status = '',
         api = '<?= $wrklst_settings['api'] ?>',
         account = '<?= $wrklst_settings['account'] ?>',
         last_call = '',
@@ -274,7 +274,7 @@ jQuery(document).ready(function($) {
         page = 1;
         e.preventDefault();
         search_query = $('#search_query', form).val();
-        if ($('#filter_available', form).is(':checked')) work_status = 'available';
+        work_status = $('#filter_available', form).is(':checked') ? 'available' : '';
         $('#wrklst_results').html('');
         $(window).off('scroll', scrollHandler);
         request_api();
