@@ -42,7 +42,7 @@ media.view.MediaFrame.Select.prototype.wlworkContent = function( content ){
 }
 
 
-media.view.wlWork = media.View.extend({
+media.view.wlWork = media.view.WrkLstBase.extend({
     tagName:   'div',
     className: 'wl-work',
     id: 'wlworkcontainer',
@@ -307,23 +307,16 @@ media.view.wlWork = media.View.extend({
         
         this.$el.html(html);
         
-        //cookie control of forms
-        function getCookie(key) {
-            return (document.cookie.match('(^|; )' + key + '=([^;]*)') || 0)[2];
-        }
+        // Use cookie functions from base class
 
-        function setCookie(n, v, d, s) {
-            var date = new Date;
-            date.setTime(date.getTime() + 864e5 * d + 1000 * (s || 0)), document.cookie = n + "=" + v + ";path=/;expires=" + date.toGMTString();
-        }
-
-        var form = $('#wrklst_form', this.$el);
+        var form = this.$('#wrklst_form');
+        var $results = this.$('#wrklst_results');
         
-        if (getCookie('wrklst_search_query'))
-            $('#search_query', form).val(getCookie('wrklst_search_query'));
+        if (self.getCookie('wrklst_search_query'))
+            $('#search_query', form).val(self.getCookie('wrklst_search_query'));
 
         $("input[id^='filter_']", form).each(function(){
-            if (getCookie('wrklst_filter_'+this.id) && getCookie('wrklst_filter_'+this.id) != '0') this.checked = true;
+            if (self.getCookie('wrklst_filter_'+this.id) && self.getCookie('wrklst_filter_'+this.id) != '0') this.checked = true;
         });
 
         //setup base variables for this method
@@ -335,33 +328,19 @@ media.view.wlWork = media.View.extend({
             last_call = '',
             wrklst_security_nonce = false,
             wrklst_url = 'https://app.wrklst.com';
+            
+        // Simple template helper for icon paths
+        var getIconPath = function(iconName) {
+            var base = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/');
+            return base + 'assets/img/' + iconName;
+        };
 
         //get api credentials and nonce
         function get_api_cred(){
-            // Check if nonce is already available from localized script
-            if (typeof wrklst_ajax !== 'undefined' && wrklst_ajax.nonce) {
-                wrklst_security_nonce = wrklst_ajax.nonce;
+            self.getApiCredentials(function(nonce) {
+                wrklst_security_nonce = nonce;
                 get_inventories();
-                return;
-            }
-            
-            // Fallback to AJAX call
-            if (typeof WrkLstAjax !== 'undefined') {
-                WrkLstAjax.getApiCredentials(function(data){
-                    wrklst_security_nonce = data.wrklst_nonce;
-                    get_inventories();
-                });
-            } else {
-                // Direct jQuery AJAX fallback
-                $.post(ajaxurl || '.', {
-                    action: 'wrklst_api_cred',
-                }, function(data){
-                    if (data.success) {
-                        wrklst_security_nonce = data.data.wrklst_nonce;
-                    }
-                    get_inventories();
-                });
-            }
+            });
         }
         get_api_cred();
 
@@ -380,55 +359,38 @@ media.view.wlWork = media.View.extend({
             e.preventDefault();
             search_query = $('#search_query', form).val();
             work_status = $('#filter_available', form).is(':checked') ? 'available' : '';
-            $('#wrklst_results', $container).html('');
+            $results.html('');
             $('.media-frame-content').first().off('scroll', scrollHandler);
             request_api();
         });
 
         //handle filter changes
         $("#filter_available", form).change(function() {
-            setCookie('wrklst_filter_'+this.id, this.checked ? 1 : 0, 365);
+            self.setCookie('wrklst_filter_'+this.id, this.checked ? 1 : 0, 365);
             form.submit();
         });
         $("#search_query", form).keyup($.debounce(600, function(e) {
-            setCookie('wrklst_search_query', $('#search_query', form).val(), 365);
+            self.setCookie('wrklst_search_query', $('#search_query', form).val(), 365);
             if(search_query!==$('#search_query', form).val())
                 form.submit();
         }));
         $("#filter_inventory", form).change(function() {
-            setCookie('wrklst_filter_inventory', $('#filter_inventory', form).val(), 365);
+            self.setCookie('wrklst_filter_inventory', $('#filter_inventory', form).val(), 365);
             form.submit();
         });
 
         //get inventories from wrklst
         function get_inventories() {
-            if (typeof WrkLstAjax !== 'undefined') {
-                WrkLstAjax.getInventories(wrklst_security_nonce, function(data){
-                    if (data && data.inventories) {
-                        $.each(data.inventories, function(k, v) {
-                            $('#filter_inventory', form).append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
-                        });
-                        if (getCookie('wrklst_filter_inventory'))
-                            $('#filter_inventory', form).val(getCookie('wrklst_filter_inventory'));
-                    }
-                    form.submit();
-                });
-            } else {
-                // Direct jQuery AJAX fallback
-                $.post(ajaxurl || '.', {
-                    action: 'wrklst_get_inventories',
-                    wpnonce: wrklst_security_nonce
-                }, function(response){
-                    if (response.success && response.data && response.data.inventories) {
-                        $.each(response.data.inventories, function(k, v) {
-                            $('#filter_inventory', form).append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
-                        });
-                        if (getCookie('wrklst_filter_inventory'))
-                            $('#filter_inventory', form).val(getCookie('wrklst_filter_inventory'));
-                    }
-                    form.submit();
-                });
-            }
+            self.getInventories(wrklst_security_nonce, function(data){
+                if (data && data.inventories) {
+                    $.each(data.inventories, function(k, v) {
+                        $('#filter_inventory', form).append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
+                    });
+                    if (self.getCookie('wrklst_filter_inventory'))
+                        $('#filter_inventory', form).val(self.getCookie('wrklst_filter_inventory'));
+                }
+                form.submit();
+            });
         }
 
         //get images for one page from wrklst
@@ -440,69 +402,52 @@ media.view.wlWork = media.View.extend({
                 return false;
             }
 
-            if (typeof WrkLstAjax !== 'undefined') {
-                WrkLstAjax.getInventoryItems({
-                    work_status: work_status,
-                    per_page: per_page,
-                    page: page,
-                    inv_sec_id: $('#filter_inventory', form).val(),
-                    search: encodeURIComponent(search_query),
-                    wpnonce: wrklst_security_nonce
-                }, function(data){
-                    if (!(data.totalHits > 0)) {
-                        $('#wrklst_results', $container).html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No matches ——</div>');
-                        $('#show_animation', $container).remove();
-                        return false;
-                    }
-                    render_results(data);
-                    last_call = url_call;
-                });
-            } else {
-                // Direct jQuery AJAX fallback
-                $.post(ajaxurl || '.', {
-                    action: 'wrklst_get_inv_items',
-                    work_status: work_status,
-                    per_page: per_page,
-                    page: page,
-                    inv_sec_id: $('#filter_inventory', form).val(),
-                    search: encodeURIComponent(search_query),
-                    wpnonce: wrklst_security_nonce
-                }, function(response){
-                    if (response.success) {
-                        var data = response.data;
-                        if (!(data.totalHits > 0)) {
-                            $('#wrklst_results', $container).html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No matches ——</div>');
-                            $('#show_animation', $container).remove();
-                            return false;
-                        }
-                        render_results(data);
-                        last_call = url_call;
-                    }
-                });
-            }
+            self.getInventoryItems({
+                work_status: work_status,
+                per_page: per_page,
+                page: page,
+                inv_sec_id: $('#filter_inventory', form).val(),
+                search: encodeURIComponent(search_query),
+                wpnonce: wrklst_security_nonce
+            }, function(data){
+                if (!(data.totalHits > 0)) {
+                    $results.html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No matches ——</div>');
+                    $('#show_animation', $container).remove();
+                    return false;
+                }
+                render_results(data);
+                last_call = url_call;
+            });
             return false;
         }
 
         //render image results into dom
         function render_results(data){
             hits = data['hits'];
-            pages = Math.ceil(data.totalHits/per_page);
+            var pages = Math.ceil(data.totalHits/per_page);
             var image_item = '';
-            $.each(data.hits, function(k, v) {
+            
+            // Use the base class rendering if available
+            if (self.renderWorkItem) {
+                $.each(data.hits, function(k, v) {
+                    image_item += self.renderWorkItem(v);
+                });
+            } else {
+                // Fallback to original rendering
+                $.each(data.hits, function(k, v) {
                 var i=0;
                 if(v.multi_img=="1") {
-                    // Get the base URL for icons - using plugin URL
-                    var iconBase = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/') + 'assets/img/';
                     
                     image_item += '<div class="item itemid'+v.import_source_id+' upload multiimg'+(v.exists===2?' exists':(v.exists?' existsp':''))+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+(v.largeImageURL || v.url_full)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+(v.imageId || 0)+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.photocredit || '')+'" data-w="'+(v.webformatWidth || 0)+'" data-h="'+(v.webformatHeight || 0)+'">'
                         +'<img src="'+(v.previewURL || v.url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
                         +'<div class="dlimg">'
-                            +'<img src="'+iconBase+'baseline-more_horiz-24px.svg" class="more">'
-                            +'<img src="'+iconBase+'baseline-arrow_forward_ios-24px.svg" class="open">'
+                            +'<img src="'+getIconPath('baseline-more_horiz-24px.svg')+'" class="more">'
+                            +'<img src="'+getIconPath('baseline-arrow_forward_ios-24px.svg')+'" class="open">'
                             +'<div class="caption">'+v.title+'</div>'
                         +'</div>'
-                        +'<div class="wrktitle"><img src="'+iconBase+'baseline-more_horiz-24px.svg"><br />'+(v.exists?'<b>'+(v.exists===2?'all':'partly')+' downloaded</b><br />':'')+'#'+(v.inv_nr || v.invnr)+'</div>'
+                        +'<div class="wrktitle"><img src="'+getIconPath('baseline-more_horiz-24px.svg')+'"><br />'+(v.exists?'<b>'+(v.exists===2?'all':'partly')+' downloaded</b><br />':'')+'#'+(v.inv_nr || v.invnr)+'</div>'
                         +'</div>';
+                    var iconBase = getIconPath('');
                     for(i=0;i<v.imgs.length;i++) {
                         image_item += '<div class="subitem hidden subitemid'+v.import_source_id+' item upload'+(v.imgs[i].exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+(v.imgs[i].largeImageURL || v.imgs[i].url_full)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imgs[i].id+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.imgs[i].photocredit || '')+'" data-w="'+(v.imgs[i].webformatWidth || 0)+'" data-h="'+(v.imgs[i].webformatHeight || 0)+'">'
                             +'<img src="'+(v.imgs[i].previewURL || v.imgs[i].url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
@@ -533,17 +478,18 @@ media.view.wlWork = media.View.extend({
                 }
 
             });
-            $('#wrklst_results', $container).html($('#wrklst_results', $container).html()+image_item);
+            }
+            $results.html($results.html()+image_item);
             $('#show_animation', $container).remove();
             if (page < pages) {
                 var iconBase = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/') + 'assets/img/';
-                $('#wrklst_results', $container).after('<div id="show_animation" style="clear:both;padding:15px 0 0;text-align:center"><img style="width:60px" src="'+iconBase+'baseline-autorenew-24px.svg" class="loading-rotator"></div>');
+                $results.after('<div id="show_animation" style="clear:both;padding:15px 0 0;text-align:center"><img style="width:60px" src="'+iconBase+'baseline-autorenew-24px.svg" class="loading-rotator"></div>');
                 $('.media-frame-content').first().scroll(scrollHandler);
             }
         }
 
         //trigger multi image display to show subimages
-        $("#wrklst_results", this.$el).on('click', '.upload.multiimg', function() {
+        $results.on('click', '.upload.multiimg', function() {
             var id = $(this).data('import_source_id');
             $( ".subitemid"+id ).each(function( index ) {
                 $( this ).toggleClass( "hidden" );
@@ -554,7 +500,7 @@ media.view.wlWork = media.View.extend({
         });
         
         //trigger collapse when clicking the ender arrow
-        $("#wrklst_results", this.$el).on('click', '.item.ender', function(e) {
+        $results.on('click', '.item.ender', function(e) {
             e.stopPropagation();
             var import_source_id = $(this).attr('class').match(/itemid(\d+)/)[1];
             $( ".subitemid"+import_source_id ).addClass( "hidden" );
@@ -562,7 +508,7 @@ media.view.wlWork = media.View.extend({
         });
 
         //trigger upload of images
-        $("#wrklst_results", this.$el).on('click', '.upload:not(.doneuploading)', function() {
+        $results.on('click', '.upload:not(.doneuploading)', function() {
             if(!$(this).hasClass('uploading')&&!$(this).hasClass('doneuploading')&&!$(this).hasClass('multiimg'))
             {
                 var iconBase = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/') + 'assets/img/';
@@ -582,27 +528,13 @@ media.view.wlWork = media.View.extend({
                     wpnonce: $(this).data('wpnonce')
                 };
                 
-                if (typeof WrkLstAjax !== 'undefined') {
-                    WrkLstAjax.uploadImage(uploadData, function(data){
-                        that.addClass('doneuploading').find('.dlimg img').replaceWith('<img src="'+iconBase+'baseline-check-24px.svg" style="height:50px !important">');
-                        var selection = frame.state().get('selection');
-                        attachment = wp.media.attachment(data.id);
-                        attachment.fetch();
-                        selection.add( attachment ? [ attachment ] : [] );
-                    });
-                } else {
-                    // Direct jQuery AJAX fallback
-                    uploadData.action = 'wrklst_upload';
-                    $.post(ajaxurl || '.', uploadData, function(response){
-                        if (response.success) {
-                            that.addClass('doneuploading').find('.dlimg img').replaceWith('<img src="'+iconBase+'baseline-check-24px.svg" style="height:50px !important">');
-                            var selection = frame.state().get('selection');
-                            attachment = wp.media.attachment(response.data.id);
-                            attachment.fetch();
-                            selection.add( attachment ? [ attachment ] : [] );
-                        }
-                    });
-                }
+                self.uploadImage(uploadData, function(data){
+                    that.addClass('doneuploading').find('.dlimg img').replaceWith('<img src="'+iconBase+'baseline-check-24px.svg" style="height:50px !important">');
+                    var selection = frame.state().get('selection');
+                    attachment = wp.media.attachment(data.id);
+                    attachment.fetch();
+                    selection.add( attachment ? [ attachment ] : [] );
+                });
             }
             return false;
         });

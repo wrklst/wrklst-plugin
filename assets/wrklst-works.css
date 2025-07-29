@@ -1,0 +1,276 @@
+/* WrkLst Works Page Styles */
+
+/* Placeholder styles */
+::-webkit-input-placeholder { color: #aaa !important; }
+::-moz-placeholder { color: #aaa !important; }
+:-ms-input-placeholder { color: #aaa !important; }
+[placeholder] { text-overflow: ellipsis; }
+
+/* Flex images grid */
+.flex-images { 
+    overflow: visible; 
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.flex-images .item { 
+    margin: 4px; 
+    background: #f3f3f3; 
+    box-sizing: content-box; 
+    overflow: hidden; 
+    position: relative;
+    flex: 1 1 260px;
+    height: 260px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-images .item > img { 
+    width: auto; 
+    height: auto; 
+    max-width: 100%; 
+    max-height: 100%; 
+}
+
+.flex-images .item > .wrktitle { 
+    display: block; 
+    position: absolute; 
+    text-align: left; 
+    left: 0; 
+    top: 0px; 
+    background: rgba(255,255,255,.80); 
+    color: #000; 
+    padding: 3px 5px 3px 5px;
+}
+
+.flex-images .item.exists > .wrktitle { 
+    background: rgba(242, 150, 150,.80); 
+}
+
+.flex-images .item.existsp > .wrktitle { 
+    background: rgba(255, 220, 150,.80); 
+}
+
+/* Download/hover overlay */
+.flex-images .dlimg {
+    opacity: 0; 
+    transition: opacity .3s; 
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    bottom: 0; 
+    left: 0;
+    cursor: pointer; 
+    background: rgba(255,255,255,.80); 
+    color: #000;
+    text-align: center; 
+    font-size: 14px; 
+    line-height: 1.5;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.flex-images .item:hover .dlimg, 
+.flex-images .item.uploading .item.doneuploading .dlimg { 
+    opacity: 1; 
+}
+
+.flex-images .item.uploading .dlimg { 
+    opacity: 1; 
+}
+
+.flex-images .item.open .dlimg { 
+    opacity: 1; 
+}
+
+.flex-images .item.doneuploading .dlimg { 
+    background: rgba(242, 254, 242,.80); 
+}
+
+.flex-images .dlimg img { 
+    position: absolute; 
+    top: 30%; 
+    left: 0; 
+    right: 0; 
+    margin: auto; 
+    height: 70px; 
+    opacity: .2; 
+}
+
+.flex-images .dlimg .caption { 
+    position: absolute; 
+    left: 0; 
+    right: 0; 
+    bottom: 15px; 
+    padding: 0 5px; 
+    text-align: left;
+}
+
+.flex-images .dlimg a { 
+    color: #eee; 
+}
+
+/* Multi-image styling */
+.flex-images .item.multiimg {
+    position: relative;
+}
+
+/* Main artwork when expanded */
+.flex-images .item.multiimg.open {
+    background: #e8e8e8;
+    border: 2px solid #999;
+    border-right: none;
+    margin-right: -2px;
+    z-index: 5;
+    flex: 0 0 260px;
+}
+
+/* Icon visibility for multi-image items */
+.flex-images .item.multiimg:not(.open) .dlimg .more {
+    display: block;
+}
+
+.flex-images .item.multiimg:not(.open) .dlimg .open {
+    display: none;
+}
+
+.flex-images .item.multiimg.open .dlimg .more {
+    display: none !important;
+}
+
+.flex-images .item.multiimg.open .dlimg .open {
+    display: block !important;
+}
+
+/* Sub-items - additional views of the same artwork */
+.flex-images div.subitem {
+    background: #e8e8e8 !important;
+    text-align: center;
+    flex: 1 1 220px;
+    height: 240px;
+    margin: 4px 0;
+    position: relative;
+    overflow: hidden;
+    box-sizing: content-box;
+    border: 2px solid #999;
+    border-left: none;
+    border-right: none;
+}
+
+.flex-images div.subitem > img {
+    width: auto;
+    height: auto;
+    max-width: 95%;
+    max-height: 80%;
+    margin-top: 10px;
+}
+
+/* First subitem gets left border */
+.flex-images .item.multiimg.open + .subitem {
+    border-left: 2px solid #999;
+}
+
+/* Last subitem before ender gets right border */
+.flex-images .subitem + .ender {
+    margin-left: -2px;
+}
+
+.flex-images div.breaker {
+    background: rgba(242, 150, 150,1);
+    height: 1px !important;
+    min-width: 100% !important;
+}
+
+.flex-images .item.subitem .dlimg {
+    border: none;
+    background: rgba(232, 232, 232, .90);
+}
+
+.flex-images .item.subitem:hover .dlimg {
+    background: rgba(255, 255, 255, .95);
+}
+
+/* End marker - collapse indicator */
+.flex-images .item.ender {
+    background: #e8e8e8 !important;
+    flex: 0 0 60px;
+    height: 240px;
+    margin: 4px 8px 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: visible;
+    border: 2px solid #999;
+    position: relative;
+    z-index: 1;
+}
+
+.flex-images .item.ender:hover {
+    background: #ddd !important;
+}
+
+.flex-images .ender .dlimg {
+    background: transparent !important;
+    opacity: 1 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.flex-images .ender .dlimg img {
+    opacity: 0.2 !important;
+    height: 40px !important;
+    width: auto;
+    position: static !important;
+    margin: 0;
+}
+
+.flex-images .item.ender:hover .dlimg img {
+    opacity: 0.3 !important;
+    transform: scale(1.1);
+}
+
+img.hide-img {
+    display: none;
+}
+
+/* Settings icon */
+#wrklst_settings_icon { 
+    opacity: .65; 
+    transition: .3s; 
+    box-shadow: none; 
+}
+
+#wrklst_settings_icon:hover { 
+    opacity: 1; 
+}
+
+/* Loading rotator animation */
+.loading-rotator {
+    transition-property: transform;
+    animation-name: rotate;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Force multi-image groups to stay on same row */
+.flex-images .item.subitem:not(.hidden) {
+    flex: 0 0 220px;
+}
+
+.flex-images .item.ender:not(.hidden) {
+    flex: 0 0 60px;
+}
