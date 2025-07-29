@@ -1,66 +1,103 @@
-### WrkLst Plugin Documentation
+# WrkLst Plugin
 
 **Contributors:** Tobias Vielmetter-Diekmann  
-**Tags:** wrklst, art, inventory, image, transfer  
+**Tags:** wrklst, art, inventory, image, media, gallery  
 **Requires at least:** 4.8.1  
 **Tested up to:** 6.5.3  
 **Stable tag:** 3.0  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
----
+## Description
 
-### Description
+[WrkLst](https://wrklst.art) is a professional artwork inventory management system. This WordPress plugin seamlessly integrates your WrkLst account with your WordPress website, enabling you to import artwork images and metadata directly into your WordPress Media Library.
 
-[WrkLst](https://wrklst.art) is an artwork inventory database solution. This plugin allows you to connect your WrkLst account to your WordPress website, enabling you to transfer images along with their captions seamlessly into the WordPress Media Library.
+## Features
 
----
+- **Media Library Integration:** Import artwork directly through the WordPress Media Library interface
+- **Bulk Import:** Transfer multiple artworks at once with batch processing
+- **Metadata Preservation:** Automatically import titles, captions, descriptions, and inventory numbers
+- **Multi-Image Support:** Handle artworks with multiple views/images
+- **Search & Filter:** Advanced search capabilities with inventory filtering
+- **Availability Status:** Filter artworks by availability status
+- **Responsive Grid Layout:** Beautiful flexbox-based image grid display
+- **Real-time Search:** Instant search results as you type
+- **Infinite Scroll:** Automatic loading of more results as you scroll
 
-### Features
-
-- **Easy Integration:** Connect your WrkLst account effortlessly with your WordPress site.
-- **Image Transfer:** Import images from WrkLst directly into your WordPress Media Library.
-- **Caption Transfer:** Automatically import captions along with the images.
-- **Seamless Workflow:** Designed to simplify the process of managing and displaying your artwork inventory online on your public facing website.
-
----
-
-### Installation
+## Installation
 
 1. **Download the Plugin:**
-   - Download the latest version of the plugin from Github.
+   - Download the latest version from the [GitHub repository](https://github.com/wrklst/wrklst-plugin)
 
 2. **Upload the Plugin:**
-   - Upload the plugin files to the `/wp-content/plugins/wrklst` directory, or upload/install the plugin through the WordPress plugins screen directly.
+   - Upload the plugin folder to `/wp-content/plugins/wrklst-plugin/`
+   - Or install directly through the WordPress admin interface
 
 3. **Activate the Plugin:**
-   - Activate the plugin through the 'Plugins' screen in WordPress.
+   - Navigate to 'Plugins' in your WordPress admin
+   - Find 'WrkLst Plugin' and click 'Activate'
 
-4. **Connect WrkLst Account:**
-   - Navigate to the WrkLst settings page in your WordPress dashboard.
-   - Enter your WrkLst API credentials to establish the connection.
+4. **Configure Settings:**
+   - Go to WrkLst → Settings in your WordPress admin
+   - Enter your WrkLst API credentials
+   - Save the settings
+
+## Usage
+
+### Importing Artwork via Media Library
+
+1. Click 'Add New' in the Media Library
+2. Select the 'Import WrkLst Work' tab
+3. Search for artworks using title, artist, or inventory number
+4. Filter by inventory or availability status
+5. Click on any artwork to import it to your Media Library
+
+### Managing Imported Artwork
+
+- Imported artworks appear in your Media Library with all metadata intact
+- Use standard WordPress features to insert artworks into posts and pages
+- Artworks are marked to show import status (fully/partially imported)
+
+### Works Overview Page
+
+- Access via WrkLst → Works in your WordPress admin
+- View all available artworks in a grid layout
+- Search and filter functionality
+- Click to import individual artworks
+
+## Requirements
+
+- WordPress 4.8.1 or higher
+- PHP 7.0 or higher
+- Active WrkLst account with API access
+- Valid SSL certificate (for secure API communication)
+
+## Getting API Access
+
+To use this plugin, WrkLst users need to obtain API credentials. Please contact **support@wrklst.art** to request the creation of an API key for authenticating the plugin with your WrkLst account.
+
+## Support
+
+For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
+
+## Changelog
+
+### 3.0
+- Complete refactor using WordPress Backbone.js framework
+- Improved multi-image artwork support
+- Enhanced search and filtering capabilities
+- Better error handling and user feedback
+- Performance optimizations
+
+### 2.0
+- Added Media Library integration
+- Implemented batch import functionality
+- Improved UI/UX
+
+### 1.0
+- Initial release
+- Basic import functionality
 
 ---
 
-### Usage
-
-1. **Access the Plugin:**
-   - Go to the WrkLst menu in your WordPress admin panel.
-
-2. **Transfer Images:**
-   - Select the images you want to transfer from your WrkLst inventory.
-   - Click the 'Transfer' button to import the images along with their captions into the WordPress Media Library.
-
-3. **Manage Imported Images:**
-   - The transferred images can be managed and displayed on your WordPress site like any other media files.
-
----
-
-### Attribution / Thanks to
-
-- **Pixabay Images:** Parts of this plugin are inspired by [Pixabay Images](https://pixabay.com/blog/posts/p-50/), published under the GPLv2 License.
-- **Material Icons:** Icons are sourced from [Material Icons](https://material.io/tools/icons/) and are used under the Apache license version 2.0.
-
----
-
-For more information and support, please visit the [WrkLst website](https://wrklst.art).
+For more information about WrkLst, visit [wrklst.art](https://wrklst.art)
