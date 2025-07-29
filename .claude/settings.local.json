@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git remote set-url:*)"
+      "Bash(git remote set-url:*)",
+      "Bash(mv:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

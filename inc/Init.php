@@ -11,6 +11,13 @@ final class Init
             Pages\Admin::class,
             Base\Enqueue::class,
             Base\SettingsLinks::class,
+            Ajax\AjaxHandler::class,
+            PostTypes\Biography::class,
+            PostTypes\Artist::class,
+            PostTypes\Exhibition::class,
+            PostTypes\ArtFair::class,
+            Shortcodes\BiographyShortcode::class,
+            Webhooks\BiographyWebhook::class,
         ];
     }
 

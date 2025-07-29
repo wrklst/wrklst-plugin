@@ -15,8 +15,8 @@ echo '<h1>WrkLst Works</h1>';
 :-ms-input-placeholder { color: #aaa !important; }
 [placeholder] { text-overflow: ellipsis; }
 
-.flex-images { overflow: hidden; }
-.flex-images .item { margin: 4px; background: #FFF; box-sizing: content-box; overflow: hidden; position: relative; }
+.flex-images { overflow: visible; }
+.flex-images .item { margin: 4px; background: #f3f3f3; box-sizing: content-box; overflow: hidden; position: relative; }
 .flex-images .item > img { width: auto; height: auto; max-width: 100%; max-height: 100%; }
 .flex-images .item > .wrktitle { display: block; position:absolute; text-align: left; left:0; top: 0px; background: rgba(255,255,255,.80); color: #000; padding: 3px 5px 3px 5px;}
 
@@ -36,19 +36,135 @@ echo '<h1>WrkLst Works</h1>';
 .flex-images .dlimg img { position: absolute; top: 30%; left: 0; right: 0; margin: auto; height: 70px; opacity: .2; }
 .flex-images .dlimg .caption { position: absolute; left: 0; right: 0; bottom: 15px; padding: 0 5px; text-align: left;}
 .flex-images .dlimg a { color: #eee; }
-.flex-images div.subitem > img { max-width: 90%; max-height: 90%; }
-.flex-images div.subitem { background: #ccc !important; text-align: center;}
+/* Multi-image styling */
+.flex-images .item.multiimg {
+    position: relative;
+}
+
+/* Main artwork when expanded */
+.flex-images .item.multiimg.open {
+    background: #e8e8e8;
+    border: 2px solid #999;
+    border-right: none;
+    margin-right: -2px;
+    z-index: 5;
+}
+
+.flex-images .item.multiimg.open > .wrktitle {
+    /* Keep original styling - no changes */
+}
+
+/* Icon visibility for multi-image items */
+.flex-images .item.multiimg:not(.open) .dlimg .more {
+    display: block;
+}
+
+.flex-images .item.multiimg:not(.open) .dlimg .open {
+    display: none;
+}
+
+.flex-images .item.multiimg.open .dlimg .more {
+    display: none !important;
+}
+
+.flex-images .item.multiimg.open .dlimg .open {
+    display: block !important;
+}
+
+/* Sub-items - additional views of the same artwork */
+.flex-images div.subitem {
+    background: #e8e8e8 !important;
+    text-align: center;
+    flex: 1 1 220px;
+    height: 240px;
+    margin: 4px 0;
+    position: relative;
+    overflow: hidden;
+    box-sizing: content-box;
+    border: 2px solid #999;
+    border-left: none;
+    border-right: none;
+}
+
+.flex-images div.subitem > img {
+    width: auto;
+    height: auto;
+    max-width: 95%;
+    max-height: 80%;
+    margin-top: 10px;
+}
+
+/* First subitem gets left border */
+.flex-images .item.multiimg.open + .subitem {
+    border-left: 2px solid #999;
+}
+
+/* Last subitem before ender gets right border */
+.flex-images .subitem + .ender {
+    margin-left: -2px;
+}
+
+.flex-images div.subitem > .wrktitle {
+    /* Keep original styling - same as regular items */
+}
+
 .flex-images div.breaker {
     background: rgba(242, 150, 150,1);
     height: 1px !important;
     min-width: 100% !important;
 }
+
 .flex-images .item.subitem .dlimg {
-    border: 15px solid #ccc;
+    border: none;
+    background: rgba(232, 232, 232, .90);
+}
+
+.flex-images .item.subitem:hover .dlimg {
+    background: rgba(255, 255, 255, .95);
+}
+
+/* End marker - collapse indicator */
+.flex-images .item.ender {
+    background: #e8e8e8 !important;
+    flex: 0 0 60px;
+    height: 240px;
+    margin: 4px 8px 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: visible;
+    border: 2px solid #999;
+    position: relative;
+    z-index: 1;
+}
+
+.flex-images .item.ender:hover {
+    background: #ddd !important;
 }
 
 .flex-images .ender .dlimg {
-    background: rgba(255, 255, 255,.0) !important;
+    background: transparent !important;
+    opacity: 1 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.flex-images .ender .dlimg img {
+    opacity: 0.2 !important;
+    height: 40px !important;
+    width: auto;
+    position: static !important;
+    margin: 0;
+}
+
+.flex-images .item.ender:hover .dlimg img {
+    opacity: 0.3 !important;
+    transform: scale(1.1);
 }
 
 img.hide-img {
@@ -83,11 +199,17 @@ img.hide-img {
     align-items: center;
 }
 
-.flex-images .item.ender .dlimg img {
-    position: relative !important;
-    top:35% !important;
-    left: 7% !important;
+/* Force multi-image groups to stay on same row */
+.flex-images .item.multiimg.open {
+    flex: 0 0 260px;
 }
+.flex-images .item.subitem:not(.hidden) {
+    flex: 0 0 220px;
+}
+.flex-images .item.ender:not(.hidden) {
+    flex: 0 0 60px;
+}
+
 </style>
 
 <div style="padding:10px 10px 10px 0px;">
@@ -109,7 +231,7 @@ img.hide-img {
     <div id="wrklst_results" class="flex-images" style="margin-top:15px;"></div>
 </div>
 <script>
-(function($) {
+jQuery(document).ready(function($) {
 
     function getCookie(key) {
         return (document.cookie.match('(^|; )' + key + '=([^;]*)') || 0)[2]
@@ -175,9 +297,7 @@ img.hide-img {
 
 
     function get_api_cred(){
-        $.post('.', {
-            wrklst_api_cred: "1",
-        }, function(data){
+        WrkLstAjax.getApiCredentials(function(data){
             wrklst_security_nonce = data.wrklst_nonce;
             get_inventories();
         });
@@ -185,10 +305,7 @@ img.hide-img {
     get_api_cred();
 
     function get_inventories(){
-        $.post('.', {
-            wrklst_get_inventories: 1,
-            wpnonce: wrklst_security_nonce
-        }, function(data){
+        WrkLstAjax.getInventories(wrklst_security_nonce, function(data){
             $.each(data.inventories, function(k, v) {
                 $('#filter_inventory').append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
             });
@@ -206,8 +323,7 @@ img.hide-img {
             return false;
         }
 
-        $.post('.', {
-            wrklst_get_inv_items: 1,
+        WrkLstAjax.getInventoryItems({
             work_status: work_status,
             per_page: per_page,
             page: page,
@@ -252,10 +368,9 @@ img.hide-img {
                         +'<div class="wrktitle"><img src="/../wp-content/plugins/wrklst-plugin/assets/img/round-cloud_download-24px.svg"><bR />'+(v.imgs[i].exists?'<b>downloaded</b><br />':'')+'#'+v.inv_nr+'</div>'
                         +'</div>';
                 }
-                image_item += '<div class="item subitem itemid'+v.import_source_id+' subitemid'+v.import_source_id+' upload multiimg hidden ender" data-w="165" data-h="1000" data-import_source_id="'+v.import_source_id+'">'
-                    +'<img src="'+v.previewURL.replace('_150', '_340')+'" style="display:none !important;">'
+                image_item += '<div class="item itemid'+v.import_source_id+' subitemid'+v.import_source_id+' hidden ender" data-w="165" data-h="1000" data-import_source_id="'+v.import_source_id+'">'
                     +'<div class="dlimg">'
-                        +'<img src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-arrow_back_ios-24px.svg" class="open hide-img">'
+                        +'<img src="/../wp-content/plugins/wrklst-plugin/assets/img/baseline-arrow_back_ios-24px.svg">'
                     +'</div>'
                     +'</div>';
             }
@@ -283,20 +398,28 @@ img.hide-img {
         $( ".subitemid"+$(this).data('import_source_id') ).each(function( index ) {
             $( this ).toggleClass( "hidden" );
         });
-        $( ".itemid"+$(this).data('import_source_id')+" .dlimg>img" ).each(function( index ) {
+        $( ".itemid"+$(this).data('import_source_id')+".multiimg .dlimg>img" ).each(function( index ) {
             $( this ).toggleClass( "hide-img" );
         });
         $( ".itemid"+$(this).data('import_source_id') ).each(function( index ) {
             $( this ).toggleClass( "open" );
         });
     });
+    
+    // Add click handler for ender element to close the group
+    $("#wrklst_results").on('click', '.item.ender', function(e) {
+        e.stopPropagation();
+        var import_source_id = $(this).data('import_source_id');
+        $( ".subitemid"+import_source_id ).addClass( "hidden" );
+        $( ".itemid"+import_source_id ).removeClass( "open" );
+        $( ".itemid"+import_source_id+".multiimg .dlimg>img" ).removeClass( "hide-img" );
+    });
     $("#wrklst_results").on('click', '.upload:not(.doneuploading)', function() {
         if(!$(this).hasClass('uploading')&&!$(this).hasClass('doneuploading')&&!$(this).hasClass('multiimg'))
         {
             $(this).addClass('uploading').find('.dlimg img').replaceWith('<img src="<?= plugin_dir_url(__FILE__).'../assets/img/baseline-autorenew-24px.svg' ?>" class="loading-rotator" style="height:80px !important">');
             var that = $(this);
-            jQuery.post('.', {
-                wrklst_upload: "1",
+            WrkLstAjax.uploadImage({
                 image_url: $(this).data('url'),
                 image_caption: $(this).data('caption'),
                 image_description: $(this).data('description'),
@@ -315,5 +438,5 @@ img.hide-img {
         }
         return false;
     });
-})( jQuery );
+});
 </script>

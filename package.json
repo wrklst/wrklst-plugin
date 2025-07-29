@@ -1,0 +1,20 @@
+{
+  "name": "wrklst-plugin",
+  "version": "0.1.0",
+  "description": "WrkLst WordPress Plugin",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build:js",
+    "build:js": "esbuild assets/src/media-selector.js --bundle --outfile=assets/dist/media-selector.js --format=iife --global-name=WrkLstMedia",
+    "watch": "npm run build:js -- --watch"
+  },
+  "keywords": ["wordpress", "plugin", "wrklst"],
+  "author": "WrkLst",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "esbuild": "^0.19.0"
+  },
+  "dependencies": {
+    "alpinejs": "^3.13.3"
+  }
+}
