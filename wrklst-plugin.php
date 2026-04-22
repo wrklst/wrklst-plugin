@@ -226,12 +226,13 @@ if (isset($_POST['wrklst_upload'])) {
 
     $wrklst_settings = get_option('wrklst_options');
 
-    $url = str_replace('https:', 'http:', $_POST['image_url']);
+    $url = $_POST['image_url'];
     $invnr = $_POST['invnr'];
     $artist = $_POST['artist'];
     $parsed_url = parse_url($url);
-    if(strcmp($parsed_url['host'], 'img.wrklst.com')) {
-        die('Error: Invalid host in URL (must be img.wrklst.com) '+$parsed_url['host']);
+    $allowed_hosts = ['img.wrklst.com', 'images.wrklst.com'];
+    if(!in_array($parsed_url['host'], $allowed_hosts)) {
+        die('Error: Invalid host in URL');
     }
 
     $response = wp_remote_get($url);
