@@ -88,6 +88,9 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.8
+- New "Download first image of each artwork" bulk button on the Exhibitions detail view (admin subpage + media uploader tab). For single-image artworks it imports the only image; for multi-image artworks it imports the first sub-image only. Already-imported artworks are skipped entirely (no second pick is taken from a multi-image artwork whose first image is already in the library)
+
 ### 3.7
 - Bulk-import buttons on the exhibition detail view: "Download all installation views", "Download all artworks", and "Download all" — each shows the remaining count and skips items already in the WP Media Library
 - New `assets/img/wrklst-icon.svg` — a stroke-only monogram tuned for 20px legibility in the admin menu, replacing the full-glyph logo for that role (the full logo stays at `assets/img/wrklst-logo.svg`)

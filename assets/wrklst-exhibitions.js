@@ -264,6 +264,9 @@
                 if (counts.installs > 0) {
                     bulkRow += '<button type="button" class="button wrklst-bulk-btn" data-scope="installs">Download all installation views <span class="wrklst-bulk-count">(' + counts.installs + ')</span></button>';
                 }
+                if (counts.artworksFirst > 0) {
+                    bulkRow += '<button type="button" class="button wrklst-bulk-btn" data-scope="artworks-first">Download first image of each artwork <span class="wrklst-bulk-count">(' + counts.artworksFirst + ')</span></button>';
+                }
                 if (counts.artworks > 0) {
                     bulkRow += '<button type="button" class="button wrklst-bulk-btn" data-scope="artworks">Download all artworks <span class="wrklst-bulk-count">(' + counts.artworks + ')</span></button>';
                 }
@@ -297,6 +300,7 @@
         countImportable: function(hits) {
             var installs = 0;
             var artworks = 0;
+            var artworksFirst = 0;
             $.each(hits, function(k, hit) {
                 var isInstall = hit.item_kind === 'installimage' || (typeof hit.import_source_id === 'string' && hit.import_source_id.indexOf('exh-') === 0);
                 if (hit.multi_img) {
@@ -304,30 +308,55 @@
                     $.each(hit.imgs || [], function(i, img) {
                         if (!img.exists) artworks++;
                     });
+                    var firstImg = (hit.imgs || [])[0];
+                    if (firstImg && !firstImg.exists) artworksFirst++;
                 } else {
                     if (hit.exists) return;
-                    if (isInstall) installs++; else artworks++;
+                    if (isInstall) {
+                        installs++;
+                    } else {
+                        artworks++;
+                        artworksFirst++;
+                    }
                 }
             });
-            return { installs: installs, artworks: artworks };
+            return { installs: installs, artworks: artworks, artworksFirst: artworksFirst };
         },
 
         bulkDownload: function(scope) {
-            var self = this;
-            var $items = this.$detailResults.find('.item.upload')
-                .not('.multiimg')
-                .not('.exists')
-                .not('.uploading')
-                .not('.doneuploading')
-                .not('.ender');
+            var $items;
 
-            $items = $items.filter(function() {
-                var importId = String($(this).data('import_source_id') || '');
-                var isInstall = importId.indexOf('exh-') === 0;
-                if (scope === 'installs') return isInstall;
-                if (scope === 'artworks') return !isInstall;
-                return true;
-            });
+            if (scope === 'artworks-first') {
+                var seen = {};
+                var picks = [];
+                this.$detailResults.find('.item.upload')
+                    .not('.multiimg')
+                    .not('.uploading')
+                    .not('.doneuploading')
+                    .not('.ender')
+                    .each(function() {
+                        var importId = String($(this).data('import_source_id') || '');
+                        if (importId.indexOf('exh-') === 0) return;
+                        if (seen[importId]) return;
+                        seen[importId] = true;
+                        if (!$(this).hasClass('exists')) picks.push(this);
+                    });
+                $items = $(picks);
+            } else {
+                $items = this.$detailResults.find('.item.upload')
+                    .not('.multiimg')
+                    .not('.exists')
+                    .not('.uploading')
+                    .not('.doneuploading')
+                    .not('.ender')
+                    .filter(function() {
+                        var importId = String($(this).data('import_source_id') || '');
+                        var isInstall = importId.indexOf('exh-') === 0;
+                        if (scope === 'installs') return isInstall;
+                        if (scope === 'artworks') return !isInstall;
+                        return true;
+                    });
+            }
 
             var i = 0;
             $items.each(function() {

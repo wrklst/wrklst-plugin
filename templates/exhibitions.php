@@ -1,7 +1,12 @@
 <?php
 $wrklst_settings = get_option('wrklst_options');
 
-echo '<h1>WrkLst Exhibitions</h1>';
+?>
+<h1 class="nav-tab-wrapper wp-clearfix">
+    <a href="<?= esc_url(admin_url('admin.php?page=wrklst_works')) ?>" class="nav-tab">WrkLst Works</a>
+    <a href="<?= esc_url(admin_url('admin.php?page=wrklst_exhibitions')) ?>" class="nav-tab nav-tab-active">Exhibitions</a>
+</h1>
+<?php
 ?>
 
 <div id="wrklst-exhibitions-container" style="padding:10px 10px 10px 0px;">

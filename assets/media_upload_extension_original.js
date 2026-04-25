@@ -28,11 +28,11 @@ media.view.MediaFrame.Select.prototype.browseRouter = function( view ) {
             priority: 20
         },
         wlwork: {
-            text:     'Import WrkLst Work',
+            text:     'WrkLst Work',
             priority: 30
         },
         wlexhibition: {
-            text:     'Import from Exhibition',
+            text:     'WrkLst Exhibition',
             priority: 35
         },
         browse: {
@@ -665,6 +665,7 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
         function countImportable(hits) {
             var installs = 0;
             var artworks = 0;
+            var artworksFirst = 0;
             $.each(hits, function(k, hit) {
                 var isInstall = hit.item_kind === 'installimage' || (typeof hit.import_source_id === 'string' && hit.import_source_id.indexOf('exh-') === 0);
                 if (hit.multi_img) {
@@ -672,12 +673,19 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                     $.each(hit.imgs || [], function(i, img) {
                         if (!img.exists) artworks++;
                     });
+                    var firstImg = (hit.imgs || [])[0];
+                    if (firstImg && !firstImg.exists) artworksFirst++;
                 } else {
                     if (hit.exists) return;
-                    if (isInstall) installs++; else artworks++;
+                    if (isInstall) {
+                        installs++;
+                    } else {
+                        artworks++;
+                        artworksFirst++;
+                    }
                 }
             });
-            return { installs: installs, artworks: artworks };
+            return { installs: installs, artworks: artworks, artworksFirst: artworksFirst };
         }
 
         if (self.getCookie('wrklst_exh_search_query')) {
@@ -832,6 +840,9 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 if (counts.installs > 0) {
                     bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="installs">Download all installation views <span class="wlexh-bulk-count">(' + counts.installs + ')</span></button>';
                 }
+                if (counts.artworksFirst > 0) {
+                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="artworks-first">Download first image of each artwork <span class="wlexh-bulk-count">(' + counts.artworksFirst + ')</span></button>';
+                }
                 if (counts.artworks > 0) {
                     bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="artworks">Download all artworks <span class="wlexh-bulk-count">(' + counts.artworks + ')</span></button>';
                 }
@@ -858,19 +869,40 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
         $header.on('click', '.wlexh-bulk-btn', function(e) {
             e.preventDefault();
             var scope = $(this).data('scope');
-            var $candidates = $items.find('.item.upload')
-                .not('.multiimg')
-                .not('.exists')
-                .not('.uploading')
-                .not('.doneuploading')
-                .not('.ender')
-                .filter(function() {
-                    var importId = String($(this).data('import_source_id') || '');
-                    var isInstall = importId.indexOf('exh-') === 0;
-                    if (scope === 'installs') return isInstall;
-                    if (scope === 'artworks') return !isInstall;
-                    return true;
-                });
+            var $candidates;
+
+            if (scope === 'artworks-first') {
+                var seen = {};
+                var picks = [];
+                $items.find('.item.upload')
+                    .not('.multiimg')
+                    .not('.uploading')
+                    .not('.doneuploading')
+                    .not('.ender')
+                    .each(function() {
+                        var importId = String($(this).data('import_source_id') || '');
+                        if (importId.indexOf('exh-') === 0) return;
+                        if (seen[importId]) return;
+                        seen[importId] = true;
+                        if (!$(this).hasClass('exists')) picks.push(this);
+                    });
+                $candidates = $(picks);
+            } else {
+                $candidates = $items.find('.item.upload')
+                    .not('.multiimg')
+                    .not('.exists')
+                    .not('.uploading')
+                    .not('.doneuploading')
+                    .not('.ender')
+                    .filter(function() {
+                        var importId = String($(this).data('import_source_id') || '');
+                        var isInstall = importId.indexOf('exh-') === 0;
+                        if (scope === 'installs') return isInstall;
+                        if (scope === 'artworks') return !isInstall;
+                        return true;
+                    });
+            }
+
             var i = 0;
             $candidates.each(function() {
                 var $el = $(this);
