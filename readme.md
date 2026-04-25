@@ -88,6 +88,9 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.12
+- Fix: explicit `fill="none"` on the rounded rectangle in `assets/img/wrklst-logo.svg`. The deployed admin menu was rendering with a white-filled rectangle because some installs ship a copy of the SVG where the outer `<g id="Page-1">` group has `fill="#fff"` and the rect (which had no fill attribute of its own) inherited that fill. Setting `fill="none"` directly on the rect makes the outline render correctly regardless of any ancestor fill value
+
 ### 3.11
 - Fix: admin menu logo now renders white. The shipped `assets/img/wrklst-logo.svg` switched `currentColor` to explicit `#FFFFFF` for both the rectangle stroke and the W/L glyphs. `currentColor` only inherits from surrounding CSS when the SVG is inlined in HTML; WordPress serves the menu icon via a `data:` URI as a CSS background-image, where the SVG renders in its own isolated document and `currentColor` falls back to black
 

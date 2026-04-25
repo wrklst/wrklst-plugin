@@ -28,7 +28,7 @@ media.view.MediaFrame.Select.prototype.browseRouter = function( view ) {
             priority: 20
         },
         wlwork: {
-            text:     'WrkLst Work',
+            text:     'WrkLst Inventory',
             priority: 30
         },
         wlexhibition: {

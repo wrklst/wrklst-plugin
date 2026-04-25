@@ -3,7 +3,7 @@ $wrklst_settings = get_option('wrklst_options');
 
 ?>
 <h1 class="nav-tab-wrapper wp-clearfix">
-    <a href="<?= esc_url(admin_url('admin.php?page=wrklst_works')) ?>" class="nav-tab">WrkLst Works</a>
+    <a href="<?= esc_url(admin_url('admin.php?page=wrklst_works')) ?>" class="nav-tab">Inventory</a>
     <a href="<?= esc_url(admin_url('admin.php?page=wrklst_exhibitions')) ?>" class="nav-tab nav-tab-active">Exhibitions</a>
 </h1>
 <?php
