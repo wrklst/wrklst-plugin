@@ -88,6 +88,10 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.3
+- Self-hosted plugin updates from GitHub: tagged releases at `wrklst/wrklst-plugin` now surface in WordPress's Dashboard → Updates flow with one-click install, replacing the need to manually re-upload the plugin zip on each release. Powered by `yahnis-elsts/plugin-update-checker` against GitHub releases (release-asset zip preferred, falls back to source archive of the tag)
+- One-time manual upgrade required to reach 3.3 (3.2 does not yet contain the update checker); from 3.3 onward updates land automatically
+
 ### 3.2
 - Added an "Exhibitions" tab/subpage with a two-step picker → detail UX: select an exhibition, then browse its installation images and artworks side-by-side
 - Added the same Exhibitions tab inside the WordPress Media Library uploader so install images and exhibition artworks can be pulled directly into Media at insert time

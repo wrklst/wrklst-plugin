@@ -6,7 +6,7 @@
  * Plugin Name: WrkLst Plugin
  * Plugin URI: https://github.com/wrklst/wp-wrklst-plugin
  * Description: Integrate your WrkLst Database with your WordPress Website.
- * Version: 3.2
+ * Version: 3.3
  * Author: Tobias Vielmetter-Diekmann
  * Author URI: https://wrklst.art/
  * License: GPLv2 or later
@@ -20,7 +20,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('WRKLST_PLUGIN_VERSION', '3.2');
+define('WRKLST_PLUGIN_VERSION', '3.3');
 define('WRKLST_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WRKLST_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WRKLST_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -28,6 +28,19 @@ define('WRKLST_PLUGIN_BASENAME', plugin_basename(__FILE__));
 // Autoloader
 if (file_exists(WRKLST_PLUGIN_PATH . 'vendor/autoload.php')) {
     require_once WRKLST_PLUGIN_PATH . 'vendor/autoload.php';
+}
+
+// Self-hosted updates from GitHub releases.
+// Reads tags from https://github.com/wrklst/wrklst-plugin so a `git push --tags`
+// of a tag whose name parses as a version newer than WRKLST_PLUGIN_VERSION
+// surfaces this plugin in WP's Dashboard → Updates flow.
+if (class_exists('YahnisElsts\\PluginUpdateChecker\\v5\\PucFactory')) {
+    $wrklst_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+        'https://github.com/wrklst/wrklst-plugin/',
+        __FILE__,
+        'wrklst-plugin'
+    );
+    $wrklst_update_checker->getVcsApi()->enableReleaseAssets();
 }
 
 // Plugin Activation
