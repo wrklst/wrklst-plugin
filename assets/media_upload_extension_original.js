@@ -598,6 +598,9 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 '.wlexh-pr-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer}' +
                 '.wlexh-pr-btn .wlexh-pr-label{font-weight:600}' +
                 '.wlexh-pr-btn .wlexh-pr-hint{color:#666;font-size:11px;text-transform:uppercase;letter-spacing:.04em}' +
+                '.wlexh-bulk-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}' +
+                '.wlexh-bulk-btn .wlexh-bulk-count{color:#666;margin-left:4px;font-variant-numeric:tabular-nums}' +
+                '.wlexh-bulk-btn.button-primary .wlexh-bulk-count{color:rgba(255,255,255,.85)}' +
                 '.hidden{display:none !important}' +
                 '</style>');
         }
@@ -657,6 +660,24 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
             try { ok = document.execCommand('copy'); } catch (e) {}
             document.body.removeChild(ta);
             return ok;
+        }
+
+        function countImportable(hits) {
+            var installs = 0;
+            var artworks = 0;
+            $.each(hits, function(k, hit) {
+                var isInstall = hit.item_kind === 'installimage' || (typeof hit.import_source_id === 'string' && hit.import_source_id.indexOf('exh-') === 0);
+                if (hit.multi_img) {
+                    if (isInstall) return;
+                    $.each(hit.imgs || [], function(i, img) {
+                        if (!img.exists) artworks++;
+                    });
+                } else {
+                    if (hit.exists) return;
+                    if (isInstall) installs++; else artworks++;
+                }
+            });
+            return { installs: installs, artworks: artworks };
         }
 
         if (self.getCookie('wrklst_exh_search_query')) {
@@ -805,6 +826,22 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 bits.push(prRow);
             }
 
+            var counts = countImportable(data.hits || []);
+            if (counts.installs > 0 || counts.artworks > 0) {
+                var bulkRow = '<div class="wlexh-bulk-row">';
+                if (counts.installs > 0) {
+                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="installs">Download all installation views <span class="wlexh-bulk-count">(' + counts.installs + ')</span></button>';
+                }
+                if (counts.artworks > 0) {
+                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="artworks">Download all artworks <span class="wlexh-bulk-count">(' + counts.artworks + ')</span></button>';
+                }
+                if (counts.installs > 0 && counts.artworks > 0) {
+                    bulkRow += '<button type="button" class="button button-primary wlexh-bulk-btn" data-scope="all">Download all <span class="wlexh-bulk-count">(' + (counts.installs + counts.artworks) + ')</span></button>';
+                }
+                bulkRow += '</div>';
+                bits.push(bulkRow);
+            }
+
             $header.html(bits.join(''));
 
             if (!data.hits || !data.hits.length) {
@@ -817,6 +854,30 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
             });
             $items.html(html);
         }
+
+        $header.on('click', '.wlexh-bulk-btn', function(e) {
+            e.preventDefault();
+            var scope = $(this).data('scope');
+            var $candidates = $items.find('.item.upload')
+                .not('.multiimg')
+                .not('.exists')
+                .not('.uploading')
+                .not('.doneuploading')
+                .not('.ender')
+                .filter(function() {
+                    var importId = String($(this).data('import_source_id') || '');
+                    var isInstall = importId.indexOf('exh-') === 0;
+                    if (scope === 'installs') return isInstall;
+                    if (scope === 'artworks') return !isInstall;
+                    return true;
+                });
+            var i = 0;
+            $candidates.each(function() {
+                var $el = $(this);
+                setTimeout(function() { $el.trigger('click'); }, i * 120);
+                i++;
+            });
+        });
 
         $header.on('click', '.wlexh-pr-btn', function(e) {
             e.preventDefault();

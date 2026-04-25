@@ -6,7 +6,7 @@
  * Plugin Name: WrkLst Plugin
  * Plugin URI: https://github.com/wrklst/wp-wrklst-plugin
  * Description: Integrate your WrkLst Database with your WordPress Website.
- * Version: 3.6
+ * Version: 3.7
  * Author: Tobias Vielmetter-Diekmann
  * Author URI: https://wrklst.art/
  * License: GPLv2 or later
@@ -20,7 +20,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('WRKLST_PLUGIN_VERSION', '3.6');
+define('WRKLST_PLUGIN_VERSION', '3.7');
 define('WRKLST_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WRKLST_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WRKLST_PLUGIN_BASENAME', plugin_basename(__FILE__));

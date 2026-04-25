@@ -88,6 +88,11 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.7
+- Bulk-import buttons on the exhibition detail view: "Download all installation views", "Download all artworks", and "Download all" — each shows the remaining count and skips items already in the WP Media Library
+- New `assets/img/wrklst-icon.svg` — a stroke-only monogram tuned for 20px legibility in the admin menu, replacing the full-glyph logo for that role (the full logo stays at `assets/img/wrklst-logo.svg`)
+- More descriptive auto-generated alt text for installation images (built server-side from the exhibition data: title, solo/group framing, artists, venue, dates, artwork count) so imported install views land with accessible alt text out of the box
+
 ### 3.6
 - Restored the full WrkLst monogram (filled W + L glyphs inside the rounded outline) for the admin menu icon, kept on `currentColor` so it inherits the active WordPress admin color scheme
 

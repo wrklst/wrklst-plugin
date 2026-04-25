@@ -105,3 +105,20 @@
     text-transform: uppercase;
     letter-spacing: .04em;
 }
+
+.wrklst-bulk-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.wrklst-bulk-btn .wrklst-bulk-count {
+    color: #666;
+    margin-left: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+.wrklst-bulk-btn.button-primary .wrklst-bulk-count {
+    color: rgba(255, 255, 255, .85);
+}

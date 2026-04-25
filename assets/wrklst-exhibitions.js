@@ -89,6 +89,11 @@
                 self.copyPressRelease($(this));
             });
 
+            this.$detailHeader.on('click', '.wrklst-bulk-btn', function(e) {
+                e.preventDefault();
+                self.bulkDownload($(this).data('scope'));
+            });
+
             this.$detailResults.on('click', '.upload.multiimg', function() {
                 var id = $(this).data('import_source_id');
                 $('.subitemid' + id).each(function() { $(this).toggleClass('hidden'); });
@@ -253,6 +258,22 @@
                 headerBits.push(prButtons);
             }
 
+            var counts = self.countImportable(data.hits || []);
+            if (counts.installs > 0 || counts.artworks > 0) {
+                var bulkRow = '<div class="wrklst-bulk-row">';
+                if (counts.installs > 0) {
+                    bulkRow += '<button type="button" class="button wrklst-bulk-btn" data-scope="installs">Download all installation views <span class="wrklst-bulk-count">(' + counts.installs + ')</span></button>';
+                }
+                if (counts.artworks > 0) {
+                    bulkRow += '<button type="button" class="button wrklst-bulk-btn" data-scope="artworks">Download all artworks <span class="wrklst-bulk-count">(' + counts.artworks + ')</span></button>';
+                }
+                if (counts.installs > 0 && counts.artworks > 0) {
+                    bulkRow += '<button type="button" class="button button-primary wrklst-bulk-btn" data-scope="all">Download all <span class="wrklst-bulk-count">(' + (counts.installs + counts.artworks) + ')</span></button>';
+                }
+                bulkRow += '</div>';
+                headerBits.push(bulkRow);
+            }
+
             this.$detailHeader.html(headerBits.join(''));
 
             if (!data.hits || !data.hits.length) {
@@ -270,6 +291,49 @@
         escapeHtml: function(s) {
             return String(s).replace(/[&<>"']/g, function(c) {
                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        },
+
+        countImportable: function(hits) {
+            var installs = 0;
+            var artworks = 0;
+            $.each(hits, function(k, hit) {
+                var isInstall = hit.item_kind === 'installimage' || (typeof hit.import_source_id === 'string' && hit.import_source_id.indexOf('exh-') === 0);
+                if (hit.multi_img) {
+                    if (isInstall) return;
+                    $.each(hit.imgs || [], function(i, img) {
+                        if (!img.exists) artworks++;
+                    });
+                } else {
+                    if (hit.exists) return;
+                    if (isInstall) installs++; else artworks++;
+                }
+            });
+            return { installs: installs, artworks: artworks };
+        },
+
+        bulkDownload: function(scope) {
+            var self = this;
+            var $items = this.$detailResults.find('.item.upload')
+                .not('.multiimg')
+                .not('.exists')
+                .not('.uploading')
+                .not('.doneuploading')
+                .not('.ender');
+
+            $items = $items.filter(function() {
+                var importId = String($(this).data('import_source_id') || '');
+                var isInstall = importId.indexOf('exh-') === 0;
+                if (scope === 'installs') return isInstall;
+                if (scope === 'artworks') return !isInstall;
+                return true;
+            });
+
+            var i = 0;
+            $items.each(function() {
+                var $el = $(this);
+                setTimeout(function() { $el.trigger('click'); }, i * 120);
+                i++;
             });
         },
 
