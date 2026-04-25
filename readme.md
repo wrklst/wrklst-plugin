@@ -4,7 +4,7 @@
 **Tags:** wrklst, art, inventory, image, media, gallery  
 **Requires at least:** 4.8.1  
 **Tested up to:** 6.5.3  
-**Stable tag:** 3.14  
+**Stable tag:** 3.15  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -114,6 +114,10 @@ To use this plugin, WrkLst users need to obtain API credentials. Please contact 
 For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
 
 ## Changelog
+
+### 3.15
+- Hide artworks with no uploaded image from the Exhibitions detail view (admin subpage and Media Library tab). Placeholder inventory rows ("Title TBC", "IMAGE IN PROGRESS") were rendering `<img src="">` which the browser then resolved against the page URL → 404. Affected items are now filtered out of the rendered grid and the bulk-download counts
+- Defensive: when a preview URL is empty, render a 1×1 transparent GIF instead of an empty `src` to prevent any future no-image hit from re-introducing the same 404
 
 ### 3.14
 - Picker preview thumbnails now request the exact same imgproxy URL that wrklst-app uses for its overview cache (`rs:fit:500:0` + `@webp`), so the preview hits the existing cache instead of forcing imgproxy to render an extra variant. The Image Format setting still applies to the uploaded copy

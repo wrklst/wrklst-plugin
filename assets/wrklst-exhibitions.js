@@ -235,6 +235,15 @@
         renderExhibitionDetail: function(data) {
             var self = this;
             var exh = data.exhibition || {};
+
+            // Hide artworks with no uploaded image — the bulk-download counts and
+            // the rendered grid should both ignore placeholder inventory rows.
+            if (data.hits && data.hits.length) {
+                data.hits = data.hits.filter(function(hit) {
+                    return self.hasImportableImage(hit);
+                });
+            }
+
             var headerBits = [];
             if (exh.artists && exh.artists.length) headerBits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
             headerBits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');

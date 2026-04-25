@@ -11,6 +11,9 @@ var UPLOAD_SIZE = 2500;
 // hit the existing cache and imgproxy does not generate extra variants. wrklst-app
 // builds overview thumbs as `rs:fit:500:0/plain/.../<path>@webp` via ImgproxyService.
 var PREVIEW_FORMAT = 'webp';
+// 1x1 transparent GIF, used when an item has no preview image so we don't emit
+// <img src=""> (which makes the browser refetch the current URL → 404).
+var BLANK_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 function imgproxyFormat() {
     return (typeof wrklst_image_config !== 'undefined' && wrklst_image_config.format) ? wrklst_image_config.format : 'jpg';
 }
@@ -23,7 +26,7 @@ function imgproxyUrl(url, width, fmt) {
     return url.slice(0, i) + '/rs:fit:' + width + ':0' + rest;
 }
 function imgproxyPreview(url) {
-    return imgproxyUrl(url, THUMB_SIZE, PREVIEW_FORMAT);
+    return url ? imgproxyUrl(url, THUMB_SIZE, PREVIEW_FORMAT) : BLANK_PIXEL;
 }
 function imgproxyThumb(url, width) {
     return imgproxyUrl(url, width, imgproxyFormat());
@@ -815,6 +818,15 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
 
         function renderExhibitionDetail(data) {
             var exh = data.exhibition || {};
+
+            // Hide artworks with no uploaded image — bulk-download counts and the
+            // rendered grid should both ignore placeholder inventory rows.
+            if (data.hits && data.hits.length && self.hasImportableImage) {
+                data.hits = data.hits.filter(function(hit) {
+                    return self.hasImportableImage(hit);
+                });
+            }
+
             var bits = [];
             if (exh.artists && exh.artists.length) bits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
             bits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');

@@ -35,6 +35,9 @@
         // Must match the imgproxy URL wrklst-app uses for overview thumbnails so the
         // preview hits the existing cache and imgproxy does not generate extra variants.
         PREVIEW_FORMAT: 'webp',
+        // 1x1 transparent GIF, used when an item has no preview image so we don't emit
+        // <img src=""> (which makes the browser refetch the current URL → 404).
+        BLANK_PIXEL: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
 
         imgproxyFormat: function() {
             return (typeof wrklst_image_config !== 'undefined' && wrklst_image_config.format) ? wrklst_image_config.format : 'jpg';
@@ -50,7 +53,7 @@
         },
 
         imgproxyPreview: function(url) {
-            return this.imgproxyUrl(url, this.THUMB_SIZE, this.PREVIEW_FORMAT);
+            return url ? this.imgproxyUrl(url, this.THUMB_SIZE, this.PREVIEW_FORMAT) : this.BLANK_PIXEL;
         },
 
         imgproxyThumb: function(url, width) {
@@ -129,17 +132,27 @@
         },
         
         // Common UI rendering methods
-        renderWorkItem: function(work) {
-            var html = '';
-            var self = this;
-            
+        hasImportableImage: function(work) {
             if (work.multi_img == "1") {
-                html += this.renderMultiImageWork(work);
-            } else {
-                html += this.renderSingleImageWork(work);
+                if (!work.imgs || !work.imgs.length) return false;
+                for (var i = 0; i < work.imgs.length; i++) {
+                    if (work.imgs[i].largeImageURL || work.imgs[i].url_full) return true;
+                }
+                return false;
             }
-            
-            return html;
+            return !!(work.largeImageURL || work.url_full || work.previewURL || work.url_thumb);
+        },
+
+        renderWorkItem: function(work) {
+            // Skip items with no image — they are not importable (e.g. placeholder
+            // inventory works in an exhibition with no media uploaded yet) and
+            // emitting <img src=""> makes the browser refetch the page → 404.
+            if (!this.hasImportableImage(work)) return '';
+
+            if (work.multi_img == "1") {
+                return this.renderMultiImageWork(work);
+            }
+            return this.renderSingleImageWork(work);
         },
         
         renderMultiImageWork: function(work) {
