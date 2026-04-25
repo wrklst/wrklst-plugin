@@ -3,7 +3,7 @@
         'name' => 'wrklst/wrklst-plugin',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '94d6d318c7234a1106d8080cab114b9454aeb908',
+        'reference' => '4d56e93023d71b9d8c3057e9542359e4ca641731',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'wrklst/wrklst-plugin' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '94d6d318c7234a1106d8080cab114b9454aeb908',
+            'reference' => '4d56e93023d71b9d8c3057e9542359e4ca641731',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
