@@ -33,11 +33,18 @@
         THUMB_SIZE: 500,
         UPLOAD_SIZE: 2500,
 
+        imgproxyFormat: function() {
+            return (typeof wrklst_image_config !== 'undefined' && wrklst_image_config.format) ? wrklst_image_config.format : 'jpg';
+        },
+
         imgproxyThumb: function(url, width) {
             if (!url) return url;
             var i = url.indexOf('/plain/');
             if (i === -1) return url.replace('_150', '_' + width);
-            return url.slice(0, i) + '/rs:fit:' + width + ':0' + url.slice(i);
+            var rest = url.slice(i);
+            var fmt = this.imgproxyFormat();
+            rest = /@[a-zA-Z0-9]+$/.test(rest) ? rest.replace(/@[a-zA-Z0-9]+$/, '@' + fmt) : rest + '@' + fmt;
+            return url.slice(0, i) + '/rs:fit:' + width + ':0' + rest;
         },
         
         // API Methods

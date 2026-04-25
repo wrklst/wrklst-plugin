@@ -7,11 +7,17 @@ var media = wp.media,
 
 var THUMB_SIZE = 500;
 var UPLOAD_SIZE = 2500;
+function imgproxyFormat() {
+    return (typeof wrklst_image_config !== 'undefined' && wrklst_image_config.format) ? wrklst_image_config.format : 'jpg';
+}
 function imgproxyThumb(url, width) {
     if (!url) return url;
     var i = url.indexOf('/plain/');
     if (i === -1) return url.replace('_150', '_' + width);
-    return url.slice(0, i) + '/rs:fit:' + width + ':0' + url.slice(i);
+    var rest = url.slice(i);
+    var fmt = imgproxyFormat();
+    rest = /@[a-zA-Z0-9]+$/.test(rest) ? rest.replace(/@[a-zA-Z0-9]+$/, '@' + fmt) : rest + '@' + fmt;
+    return url.slice(0, i) + '/rs:fit:' + width + ':0' + rest;
 }
 
 // override router creation

@@ -84,6 +84,12 @@ class Admin extends BaseController
                 'title'     => 'Work Caption Settings',
                 'callback'  => [$this->callbacks,'wrklstAdminWlApiSection4'],
                 'page'      => 'wrklst_settings',
+            ],
+            [
+                'id'        => 'wrklst_options_section5',
+                'title'     => 'Image Settings',
+                'callback'  => [$this->callbacks,'wrklstAdminWlApiSection5'],
+                'page'      => 'wrklst_settings',
             ]
         ];
 
@@ -201,6 +207,17 @@ class Admin extends BaseController
                 'args'      => [
                     'label_for' => 'workdcaptioninvnr',
                     'class' => 'workdcaptioninvnr-class',
+                ],
+            ],
+            [
+                'id'        => 'imageformat',
+                'title'     => 'Image Format',
+                'callback'  => [$this->callbacks,'wrklstImageFormat'],
+                'page'      => 'wrklst_settings',
+                'section'   => 'wrklst_options_section5',
+                'args'      => [
+                    'label_for' => 'imageformat',
+                    'class' => 'imageformat-class',
                 ],
             ]
         ];

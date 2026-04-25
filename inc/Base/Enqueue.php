@@ -12,6 +12,11 @@ class Enqueue extends BaseController
         add_action('wp_enqueue_media', [$this, 'enqueue_media_scripts']);
     }
 
+    private function get_image_format() {
+        $options = get_option('wrklst_options');
+        return (isset($options['imageformat']) && in_array($options['imageformat'], ['jpg', 'webp'], true)) ? $options['imageformat'] : 'jpg';
+    }
+
     function enqueue($hook) {
         // Load on all admin pages for now to ensure scripts are available
         // TODO: Optimize to load only on specific pages once we identify all page hooks
@@ -36,6 +41,9 @@ class Enqueue extends BaseController
             wp_enqueue_script('media-views');
             wp_enqueue_script('backbone');
             wp_enqueue_script('wrklst-base', $this->plugin_url . 'assets/wrklst-base.js', array('jquery', 'wrklst-ajax', 'media-views', 'backbone'), WRKLST_PLUGIN_VERSION, true);
+            wp_localize_script('wrklst-base', 'wrklst_image_config', array(
+                'format' => $this->get_image_format(),
+            ));
         }
         
         // Enqueue other scripts with proper dependencies
@@ -65,6 +73,9 @@ class Enqueue extends BaseController
         
         // Load the base class
         wp_enqueue_script('wrklst-base', $this->plugin_url . 'assets/wrklst-base.js', array('jquery', 'wrklst-ajax', 'media-views', 'backbone'), WRKLST_PLUGIN_VERSION, true);
+        wp_localize_script('wrklst-base', 'wrklst_image_config', array(
+            'format' => $this->get_image_format(),
+        ));
         
         // Use the proper WordPress Backbone.js version
         wp_enqueue_script('wl-media-upload-extension', $this->plugin_url . 'assets/media_upload_extension_original.js', array('jquery', 'wrklst-ajax', 'media-views', 'wrklst-debounce', 'backbone', 'wrklst-base'), WRKLST_PLUGIN_VERSION, true);

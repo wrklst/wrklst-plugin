@@ -51,6 +51,9 @@ class AdminCallbacks extends BaseController
         
         if (isset($input['workdcaptioninvnr']) && $input['workdcaptioninvnr']) $options['workdcaptioninvnr'] = $input['workdcaptioninvnr']; else $options['workdcaptioninvnr'] = 0;
 
+        $allowed_formats = ['jpg', 'webp'];
+        $options['imageformat'] = (isset($input['imageformat']) && in_array($input['imageformat'], $allowed_formats, true)) ? $input['imageformat'] : 'jpg';
+
         return $options;
     }
 
@@ -72,6 +75,11 @@ class AdminCallbacks extends BaseController
     public function wrklstAdminWlApiSection4()
     {
         echo 'Settigns for Work Captions and what they include.';
+    }
+
+    public function wrklstAdminWlApiSection5()
+    {
+        echo 'Choose the image format delivered by imgproxy for media library thumbnails and uploads.';
     }
 
     public function wrklstAccountId()
@@ -213,7 +221,18 @@ class AdminCallbacks extends BaseController
             $options = [];
             $options['workdcaptioninvnr'] = 1;
         }
-    
+
         echo '<input type="checkbox" value="1" id="workdcaptioninvnr" name="wrklst_options[workdcaptioninvnr]"'.(($options['workdcaptioninvnr'])?'checked':'').' />';
+    }
+
+    public function wrklstImageFormat()
+    {
+        $options = get_option('wrklst_options');
+        $current = (isset($options['imageformat']) && in_array($options['imageformat'], ['jpg', 'webp'], true)) ? $options['imageformat'] : 'jpg';
+
+        echo '<select id="imageformat" name="wrklst_options[imageformat]">'
+            .'<option value="jpg"'.($current === 'jpg' ? ' selected' : '').'>JPEG</option>'
+            .'<option value="webp"'.($current === 'webp' ? ' selected' : '').'>WebP</option>'
+            .'</select>';
     }
 }
