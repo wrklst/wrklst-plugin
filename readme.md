@@ -88,6 +88,9 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.4
+- Replaced the admin menu icon with the WrkLst monogram SVG, served as a `data:` URI so it picks up WordPress's admin color scheme automatically. Removed the orphan PNG
+
 ### 3.3
 - Self-hosted plugin updates from GitHub: tagged releases at `wrklst/wrklst-plugin` now surface in WordPress's Dashboard → Updates flow with one-click install, replacing the need to manually re-upload the plugin zip on each release. Powered by `yahnis-elsts/plugin-update-checker` against GitHub releases (release-asset zip preferred, falls back to source archive of the tag)
 - One-time manual upgrade required to reach 3.3 (3.2 does not yet contain the update checker); from 3.3 onward updates land automatically
