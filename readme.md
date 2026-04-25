@@ -88,14 +88,8 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
-### 3.12
-- Fix: explicit `fill="none"` on the rounded rectangle in `assets/img/wrklst-logo.svg`. The deployed admin menu was rendering with a white-filled rectangle because some installs ship a copy of the SVG where the outer `<g id="Page-1">` group has `fill="#fff"` and the rect (which had no fill attribute of its own) inherited that fill. Setting `fill="none"` directly on the rect makes the outline render correctly regardless of any ancestor fill value
-
-### 3.11
-- Fix: admin menu logo now renders white. The shipped `assets/img/wrklst-logo.svg` switched `currentColor` to explicit `#FFFFFF` for both the rectangle stroke and the W/L glyphs. `currentColor` only inherits from surrounding CSS when the SVG is inlined in HTML; WordPress serves the menu icon via a `data:` URI as a CSS background-image, where the SVG renders in its own isolated document and `currentColor` falls back to black
-
-### 3.10
-- Revert: the admin menu icon points at `assets/img/wrklst-logo.svg` again. The 3.7 detour into a redrawn `wrklst-icon.svg` (stroked W and L glyphs) is removed — the original full-monogram logo is the icon
+### 3.13
+- Admin menu icon switched to `assets/img/wrklst-logo.png` (rendered via a plain `<img>` tag by WordPress). Removed the SVG and orphan Sketch source
 
 ### 3.9
 - Fix: the "WrkLst Exhibition" tab inside the WordPress Media Library uploader now populates immediately on open. Previously the initial fetch fired before the submit handler was bound (because the API-credentials callback ran synchronously off the localized nonce), so the picker stayed empty until the user typed a character to re-trigger the fetch
@@ -105,11 +99,7 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ### 3.7
 - Bulk-import buttons on the exhibition detail view: "Download all installation views", "Download all artworks", and "Download all" — each shows the remaining count and skips items already in the WP Media Library
-- New `assets/img/wrklst-icon.svg` — a stroke-only monogram tuned for 20px legibility in the admin menu, replacing the full-glyph logo for that role (the full logo stays at `assets/img/wrklst-logo.svg`)
 - More descriptive auto-generated alt text for installation images (built server-side from the exhibition data: title, solo/group framing, artists, venue, dates, artwork count) so imported install views land with accessible alt text out of the box
-
-### 3.6
-- Restored the full WrkLst monogram (filled W + L glyphs inside the rounded outline) for the admin menu icon, kept on `currentColor` so it inherits the active WordPress admin color scheme
 
 ### 3.5
 - Press releases on the Exhibitions detail view: when an exhibition has one or more press releases, a row of buttons appears at the top of the detail header showing each release's title; clicking a button copies the cleaned Quill HTML to the clipboard, ready to paste into a WordPress post body. Wired up on both the Exhibitions admin subpage and the Media Library "Import from Exhibition" tab
