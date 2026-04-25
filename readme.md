@@ -88,6 +88,9 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.9
+- Fix: the "WrkLst Exhibition" tab inside the WordPress Media Library uploader now populates immediately on open. Previously the initial fetch fired before the submit handler was bound (because the API-credentials callback ran synchronously off the localized nonce), so the picker stayed empty until the user typed a character to re-trigger the fetch
+
 ### 3.8
 - New "Download first image of each artwork" bulk button on the Exhibitions detail view (admin subpage + media uploader tab). For single-image artworks it imports the only image; for multi-image artworks it imports the first sub-image only. Already-imported artworks are skipped entirely (no second pick is taken from a multi-image artwork whose first image is already in the library)
 

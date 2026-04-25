@@ -694,11 +694,6 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
 
         var iconBase = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/') + 'assets/img/';
 
-        self.getApiCredentials(function(nonce) {
-            wrklstSecurityNonce = nonce;
-            $form.submit();
-        });
-
         var scrollHandler = function() {
             if ($('.media-frame-content').first().scrollTop() + $('.media-frame-content').first().height() > $('.wl-exhibition').first().height() - 400) {
                 $('.media-frame-content').first().off('scroll', scrollHandler);
@@ -977,6 +972,17 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 });
             }
             return false;
+        });
+
+        // Kick off the initial fetch only after every handler above is bound.
+        // self.getApiCredentials's callback can fire synchronously when
+        // wrklst_ajax.nonce is already localized, so doing this earlier would
+        // call $form.submit() before the submit handler exists and silently
+        // skip the first request — the picker would only populate once the
+        // user typed into the search box.
+        self.getApiCredentials(function(nonce) {
+            wrklstSecurityNonce = nonce;
+            $form.submit();
         });
     }
 });
