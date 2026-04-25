@@ -594,6 +594,10 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 '.wlexh-sub,.wlexh-counts{font-size:11px;color:#777;margin-top:3px}' +
                 '.wlexh-back{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#555;font-size:13px;margin:8px 0}' +
                 '.wlexh-back:hover{color:#000}' +
+                '.wlexh-pr-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}' +
+                '.wlexh-pr-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer}' +
+                '.wlexh-pr-btn .wlexh-pr-label{font-weight:600}' +
+                '.wlexh-pr-btn .wlexh-pr-hint{color:#666;font-size:11px;text-transform:uppercase;letter-spacing:.04em}' +
                 '.hidden{display:none !important}' +
                 '</style>');
         }
@@ -632,7 +636,28 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
             searchQuery = '',
             lastCall = '',
             wrklstSecurityNonce = false,
-            currentExhibitionId = null;
+            currentExhibitionId = null,
+            pressReleases = {};
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, function(c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        function fallbackCopy(t) {
+            var ta = document.createElement('textarea');
+            ta.value = t;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+            return ok;
+        }
 
         if (self.getCookie('wrklst_exh_search_query')) {
             $search.val(self.getCookie('wrklst_exh_search_query'));
@@ -698,6 +723,7 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 var counts = [];
                 if (exh.installimage_count) counts.push(exh.installimage_count + ' install');
                 if (exh.artwork_count) counts.push(exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's'));
+                if (exh.pressrelease_count) counts.push(exh.pressrelease_count + ' press release' + (exh.pressrelease_count === 1 ? '' : 's'));
                 var thumb = exh.thumbURL ? self.imgproxyThumb(exh.thumbURL, self.THUMB_SIZE) : '';
                 var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
 
@@ -763,6 +789,22 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
             if (exh.date_display) sub.push(exh.date_display);
             if (exh.venues && exh.venues.length) sub.push(exh.venues.join(', '));
             if (sub.length) bits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
+
+            pressReleases = {};
+            if (data.pressreleases && data.pressreleases.length) {
+                var prRow = '<div class="wlexh-pr-row">';
+                $.each(data.pressreleases, function(k, pr) {
+                    pressReleases[pr.id] = pr.text || '';
+                    var label = pr.title && pr.title.length ? pr.title : 'Press Release';
+                    prRow += '<button type="button" class="button wlexh-pr-btn" data-pr-id="' + pr.id + '">' +
+                                '<span class="wlexh-pr-label">' + escapeHtml(label) + '</span>' +
+                                '<span class="wlexh-pr-hint">copy HTML</span>' +
+                             '</button>';
+                });
+                prRow += '</div>';
+                bits.push(prRow);
+            }
+
             $header.html(bits.join(''));
 
             if (!data.hits || !data.hits.length) {
@@ -775,6 +817,30 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
             });
             $items.html(html);
         }
+
+        $header.on('click', '.wlexh-pr-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var prId = $btn.data('pr-id');
+            var text = pressReleases[prId];
+            if (typeof text !== 'string') return;
+
+            var $hint = $btn.find('.wlexh-pr-hint');
+            var revert = function(msg) {
+                $hint.text(msg);
+                setTimeout(function() { $hint.text('copy HTML'); }, 1600);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    revert('copied!');
+                }, function() {
+                    revert(fallbackCopy(text) ? 'copied!' : 'copy failed');
+                });
+            } else {
+                revert(fallbackCopy(text) ? 'copied!' : 'copy failed');
+            }
+        });
 
         $items.on('click', '.upload.multiimg', function() {
             var id = $(this).data('import_source_id');

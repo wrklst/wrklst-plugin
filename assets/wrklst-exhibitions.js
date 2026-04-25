@@ -38,6 +38,7 @@
             this.lastCall = '';
             this.wrklstSecurityNonce = false;
             this.currentExhibitionId = null;
+            this.pressReleases = {};
 
             if (this.getCookie('wrklst_exh_search_query')) {
                 this.$pickerSearch.val(this.getCookie('wrklst_exh_search_query'));
@@ -81,6 +82,11 @@
             this.$backButton.on('click', function(e) {
                 e.preventDefault();
                 self.closeExhibition();
+            });
+
+            this.$detailHeader.on('click', '.wrklst-pr-btn', function(e) {
+                e.preventDefault();
+                self.copyPressRelease($(this));
             });
 
             this.$detailResults.on('click', '.upload.multiimg', function() {
@@ -161,6 +167,7 @@
                 var counts = [];
                 if (exh.installimage_count) counts.push(exh.installimage_count + ' install image' + (exh.installimage_count === 1 ? '' : 's'));
                 if (exh.artwork_count) counts.push(exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's'));
+                if (exh.pressrelease_count) counts.push(exh.pressrelease_count + ' press release' + (exh.pressrelease_count === 1 ? '' : 's'));
 
                 var thumb = exh.thumbURL ? self.imgproxyThumb(exh.thumbURL, self.THUMB_SIZE) : '';
                 var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
@@ -230,6 +237,22 @@
             if (exh.date_display) sub.push(exh.date_display);
             if (exh.venues && exh.venues.length) sub.push(exh.venues.join(', '));
             if (sub.length) headerBits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
+
+            this.pressReleases = {};
+            if (data.pressreleases && data.pressreleases.length) {
+                var prButtons = '<div class="wrklst-pr-row">';
+                $.each(data.pressreleases, function(k, pr) {
+                    self.pressReleases[pr.id] = pr.text || '';
+                    var label = pr.title && pr.title.length ? pr.title : 'Press Release';
+                    prButtons += '<button type="button" class="button wrklst-pr-btn" data-pr-id="' + pr.id + '">' +
+                                    '<span class="wrklst-pr-label">' + self.escapeHtml(label) + '</span>' +
+                                    '<span class="wrklst-pr-hint">copy HTML</span>' +
+                                 '</button>';
+                });
+                prButtons += '</div>';
+                headerBits.push(prButtons);
+            }
+
             this.$detailHeader.html(headerBits.join(''));
 
             if (!data.hits || !data.hits.length) {
@@ -242,6 +265,48 @@
                 html += self.renderWorkItem(hit);
             });
             this.$detailResults.html(html);
+        },
+
+        escapeHtml: function(s) {
+            return String(s).replace(/[&<>"']/g, function(c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        },
+
+        copyPressRelease: function($btn) {
+            var prId = $btn.data('pr-id');
+            var text = this.pressReleases[prId];
+            if (typeof text !== 'string') return;
+
+            var $label = $btn.find('.wrklst-pr-hint');
+            var revert = function(msg) {
+                $label.text(msg);
+                setTimeout(function() { $label.text('copy HTML'); }, 1600);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    revert('copied!');
+                }, function() {
+                    revert(fallbackCopy(text) ? 'copied!' : 'copy failed');
+                });
+            } else {
+                revert(fallbackCopy(text) ? 'copied!' : 'copy failed');
+            }
+
+            function fallbackCopy(t) {
+                var ta = document.createElement('textarea');
+                ta.value = t;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                var ok = false;
+                try { ok = document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(ta);
+                return ok;
+            }
         }
     });
 

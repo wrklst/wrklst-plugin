@@ -80,3 +80,28 @@
 #wrklst_exh_back:hover {
     color: #000;
 }
+
+.wrklst-pr-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.wrklst-pr-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.wrklst-pr-btn .wrklst-pr-label {
+    font-weight: 600;
+}
+
+.wrklst-pr-btn .wrklst-pr-hint {
+    color: #666;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}

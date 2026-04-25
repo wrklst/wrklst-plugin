@@ -88,6 +88,10 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.5
+- Press releases on the Exhibitions detail view: when an exhibition has one or more press releases, a row of buttons appears at the top of the detail header showing each release's title; clicking a button copies the cleaned Quill HTML to the clipboard, ready to paste into a WordPress post body. Wired up on both the Exhibitions admin subpage and the Media Library "Import from Exhibition" tab
+- Picker cards now show a press-release count alongside the install/artwork counts so it's visible at a glance which exhibitions ship a release
+
 ### 3.4
 - Replaced the admin menu icon with the WrkLst monogram SVG, served as a `data:` URI so it picks up WordPress's admin color scheme automatically. Removed the orphan PNG
 
