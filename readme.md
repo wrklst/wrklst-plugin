@@ -88,6 +88,9 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.11
+- Fix: admin menu logo now renders white. The shipped `assets/img/wrklst-logo.svg` switched `currentColor` to explicit `#FFFFFF` for both the rectangle stroke and the W/L glyphs. `currentColor` only inherits from surrounding CSS when the SVG is inlined in HTML; WordPress serves the menu icon via a `data:` URI as a CSS background-image, where the SVG renders in its own isolated document and `currentColor` falls back to black
+
 ### 3.10
 - Revert: the admin menu icon points at `assets/img/wrklst-logo.svg` again. The 3.7 detour into a redrawn `wrklst-icon.svg` (stroked W and L glyphs) is removed — the original full-monogram logo is the icon
 
