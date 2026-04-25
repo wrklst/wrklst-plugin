@@ -72,6 +72,12 @@
 - Active WrkLst account with API access
 - Valid SSL certificate (for secure API communication)
 
+## Development
+
+The `vendor/` directory is committed to the repository so the repo can be dropped into `wp-content/plugins/` and used directly — no `composer install` step required.
+
+When updating dependencies, run `composer update` (or `composer require ...`) and commit the resulting changes to `vendor/` and `composer.lock` together. Bundled tests, fixtures, and dev metadata inside vendor packages are excluded via `.gitignore` to keep the tree small.
+
 ## Getting API Access
 
 To use this plugin, WrkLst users need to obtain API credentials. Please contact **support@wrklst.art** to request the creation of an API key for authenticating the plugin with your WrkLst account.

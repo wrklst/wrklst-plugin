@@ -1,5 +1,19 @@
 # Dependencies
-/vendor/
+# /vendor/ is intentionally committed so the repo can be used directly as a WordPress plugin without running `composer install`.
+# Exclude bundled tests, fixtures, and dev metadata that ship inside vendor packages — they bloat the repo and aren't needed at runtime.
+/vendor/**/test/
+/vendor/**/tests/
+/vendor/**/Test/
+/vendor/**/Tests/
+/vendor/**/.git*
+/vendor/**/.travis.yml
+/vendor/**/.styleci.yml
+/vendor/**/.php_cs
+/vendor/**/.php_cs.dist
+/vendor/**/phpunit.xml*
+/vendor/**/phpcs.xml*
+/vendor/**/CONTRIBUTING.md
+/vendor/**/CHANGELOG.md
 /node_modules/
 
 # Development files
