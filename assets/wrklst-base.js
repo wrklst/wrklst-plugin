@@ -154,14 +154,30 @@
             }
             return this.renderSingleImageWork(work);
         },
+
+        // Return the confirmed/unconfirmed class for an exhibition inventory hit.
+        // Backend sets `confirmed: true|false` on inventory hits inside an
+        // exhibition; install images (and works outside an exhibition context)
+        // have no `confirmed` field, so they get no class and are unaffected by
+        // the "confirmed only" filter.
+        confirmedClass: function(work) {
+            if (work.confirmed === true) return ' confirmed';
+            if (work.confirmed === false) return ' unconfirmed';
+            return '';
+        },
+
+        confirmedBadge: function(work) {
+            return work.confirmed === true ? '<b class="wrklst-confirmed-badge">confirmed</b><br />' : '';
+        },
         
         renderMultiImageWork: function(work) {
             var self = this;
             var html = '';
             
             // Main multi-image item
-            html += '<div class="item itemid' + work.import_source_id + ' upload multiimg' + 
-                    (work.exists === 2 ? ' exists' : (work.exists ? ' existsp' : '')) + '" ' +
+            html += '<div class="item itemid' + work.import_source_id + ' upload multiimg' +
+                    (work.exists === 2 ? ' exists' : (work.exists ? ' existsp' : '')) +
+                    this.confirmedClass(work) + '" ' +
                     this.buildDataAttributes(work) + '>' +
                     '<img src="' + this.imgproxyPreview(work.previewURL || work.url_thumb) + '" title="#' +
                     (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
@@ -171,6 +187,7 @@
                         '<div class="caption">' + work.title + '</div>' +
                     '</div>' +
                     '<div class="wrktitle"><img src="' + this.getIconPath('baseline-more_horiz-24px.svg') + '"><br />' +
+                    this.confirmedBadge(work) +
                     (work.exists ? '<b>' + (work.exists === 2 ? 'all' : 'partly') + ' downloaded</b><br />' : '') +
                     '#' + (work.inv_nr || work.invnr) + '</div>' +
                 '</div>';
@@ -195,7 +212,8 @@
         },
         
         renderSingleImageWork: function(work) {
-            var html = '<div class="item upload' + (work.exists ? ' exists' : '') + '" ' +
+            var html = '<div class="item upload' + (work.exists ? ' exists' : '') +
+                      this.confirmedClass(work) + '" ' +
                       this.buildDataAttributes(work) + '>' +
                       '<img src="' + this.imgproxyPreview(work.previewURL || work.url_thumb) + '" title="#' +
                       (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
@@ -204,15 +222,20 @@
                           '<div class="caption">' + work.title + '</div>' +
                       '</div>' +
                       '<div class="wrktitle"><img src="' + this.getIconPath('round-cloud_download-24px.svg') + '"><br />' +
+                      this.confirmedBadge(work) +
                       (work.exists ? '<b>downloaded</b><br />' : '') + '#' + (work.inv_nr || work.invnr) + '</div>' +
                   '</div>';
-            
+
             return html;
         },
         
         renderSubImage: function(work, img) {
-            var html = '<div class="subitem hidden subitemid' + work.import_source_id + 
-                      ' item upload' + (img.exists ? ' exists' : '') + '" ' +
+            // Sub-images inherit the parent work's confirmed status — the pivot
+            // confirmed flag belongs to the inventory record, not the individual
+            // image — so they hide together when "Confirmed only" is on.
+            var html = '<div class="subitem hidden subitemid' + work.import_source_id +
+                      ' item upload' + (img.exists ? ' exists' : '') +
+                      this.confirmedClass(work) + '" ' +
                       'data-title="' + work.title + '" ' +
                       'data-wpnonce="' + work.wpnonce + '" ' +
                       'data-url="' + this.imgproxyThumb(img.largeImageURL || img.url_full, this.UPLOAD_SIZE) + '" ' +

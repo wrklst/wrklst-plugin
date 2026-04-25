@@ -4,7 +4,7 @@
 **Tags:** wrklst, art, inventory, image, media, gallery  
 **Requires at least:** 4.8.1  
 **Tested up to:** 6.5.3  
-**Stable tag:** 3.15  
+**Stable tag:** 3.16  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -114,6 +114,12 @@ To use this plugin, WrkLst users need to obtain API credentials. Please contact 
 For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
 
 ## Changelog
+
+### 3.16
+- Confirmed artworks in an exhibition are now visually marked with a green "confirmed" badge in the picker grid (admin subpage and Media Library tab)
+- New "Confirmed only" toggle on the exhibition detail header. Defaults to on whenever the exhibition has at least one confirmed artwork (the unconfirmed roster is usually still being curated). When on, unconfirmed artworks are hidden from the grid, the bulk-download counts only count confirmed items, and the bulk-download buttons skip unconfirmed inventory. Installation views are unaffected by the toggle since they have no confirmation state
+- Picker cards show "(N confirmed)" alongside the artwork count whenever the count differs from the total
+- Backend (wrklst-app): the WordPress integration endpoint now emits `confirmed: bool` on each inventory hit (from `exhibitionables.confirmed`) and `artwork_count_confirmed` on the exhibition summary
 
 ### 3.15
 - Hide artworks with no uploaded image from the Exhibitions detail view (admin subpage and Media Library tab). Placeholder inventory rows ("Title TBC", "IMAGE IN PROGRESS") were rendering `<img src="">` which the browser then resolved against the page URL → 404. Affected items are now filtered out of the rendered grid and the bulk-download counts

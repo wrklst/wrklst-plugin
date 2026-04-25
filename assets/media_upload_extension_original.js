@@ -613,6 +613,11 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 '.wlexh-bulk-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}' +
                 '.wlexh-bulk-btn .wlexh-bulk-count{color:#666;margin-left:4px;font-variant-numeric:tabular-nums}' +
                 '.wlexh-bulk-btn.button-primary .wlexh-bulk-count{color:rgba(255,255,255,.85)}' +
+                '.wrklst-confirmed-toggle{display:inline-flex;align-items:center;gap:6px;margin:6px 0 4px;font-size:13px;cursor:pointer;user-select:none}' +
+                '.wrklst-confirmed-toggle input{margin:0 4px 0 0}' +
+                '.wrklst-confirmed-toggle-counts{color:#888;font-variant-numeric:tabular-nums}' +
+                '.wrklst-confirmed-badge{display:inline-block;padding:1px 6px;margin-bottom:4px;background:#2c8a3a;color:#fff;border-radius:8px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}' +
+                '.wrklst-show-confirmed-only .item.unconfirmed{display:none !important}' +
                 '.hidden{display:none !important}' +
                 '</style>');
         }
@@ -674,12 +679,14 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
             return ok;
         }
 
-        function countImportable(hits) {
+        function countImportable(hits, opts) {
+            var confirmedOnly = !!(opts && opts.confirmedOnly);
             var installs = 0;
             var artworks = 0;
             var artworksFirst = 0;
             $.each(hits, function(k, hit) {
                 var isInstall = hit.item_kind === 'installimage' || (typeof hit.import_source_id === 'string' && hit.import_source_id.indexOf('exh-') === 0);
+                if (!isInstall && confirmedOnly && hit.confirmed !== true) return;
                 if (hit.multi_img) {
                     if (isInstall) return;
                     $.each(hit.imgs || [], function(i, img) {
@@ -698,6 +705,70 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 }
             });
             return { installs: installs, artworks: artworks, artworksFirst: artworksFirst };
+        }
+
+        var currentExh = null;
+        var currentHits = [];
+        var currentPressReleases = [];
+        var confirmedOnly = false;
+
+        function renderDetailHeader() {
+            var bits = [];
+            var exh = currentExh || {};
+            if (exh.artists && exh.artists.length) bits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
+            bits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');
+            var sub = [];
+            if (exh.date_display) sub.push(exh.date_display);
+            if (exh.venues && exh.venues.length) sub.push(exh.venues.join(', '));
+            if (sub.length) bits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
+
+            pressReleases = {};
+            if (currentPressReleases.length) {
+                var prRow = '<div class="wlexh-pr-row">';
+                $.each(currentPressReleases, function(k, pr) {
+                    pressReleases[pr.id] = pr.text || '';
+                    var label = pr.title && pr.title.length ? pr.title : 'Press Release';
+                    prRow += '<button type="button" class="button wlexh-pr-btn" data-pr-id="' + pr.id + '">' +
+                                '<span class="wlexh-pr-label">' + escapeHtml(label) + '</span>' +
+                                '<span class="wlexh-pr-hint">copy HTML</span>' +
+                             '</button>';
+                });
+                prRow += '</div>';
+                bits.push(prRow);
+            }
+
+            var totalConfirmed = currentHits.filter(function(h) { return h.confirmed === true; }).length;
+            var totalUnconfirmed = currentHits.filter(function(h) { return h.confirmed === false; }).length;
+            if (totalConfirmed + totalUnconfirmed > 0) {
+                bits.push(
+                    '<label class="wrklst-confirmed-toggle">' +
+                        '<input type="checkbox" class="wlexh-confirmed-only"' + (confirmedOnly ? ' checked' : '') + '> ' +
+                        'Confirmed only ' +
+                        '<span class="wrklst-confirmed-toggle-counts">(' + totalConfirmed + ' confirmed / ' + totalUnconfirmed + ' unconfirmed)</span>' +
+                    '</label>'
+                );
+            }
+
+            var counts = countImportable(currentHits, { confirmedOnly: confirmedOnly });
+            if (counts.installs > 0 || counts.artworks > 0) {
+                var bulkRow = '<div class="wlexh-bulk-row">';
+                if (counts.installs > 0) {
+                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="installs">Download all installation views <span class="wlexh-bulk-count">(' + counts.installs + ')</span></button>';
+                }
+                if (counts.artworksFirst > 0) {
+                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="artworks-first">Download first image of each artwork <span class="wlexh-bulk-count">(' + counts.artworksFirst + ')</span></button>';
+                }
+                if (counts.artworks > 0) {
+                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="artworks">Download all artworks <span class="wlexh-bulk-count">(' + counts.artworks + ')</span></button>';
+                }
+                if (counts.installs > 0 && counts.artworks > 0) {
+                    bulkRow += '<button type="button" class="button button-primary wlexh-bulk-btn" data-scope="all">Download all <span class="wlexh-bulk-count">(' + (counts.installs + counts.artworks) + ')</span></button>';
+                }
+                bulkRow += '</div>';
+                bits.push(bulkRow);
+            }
+
+            $header.html(bits.join(''));
         }
 
         if (self.getCookie('wrklst_exh_search_query')) {
@@ -758,7 +829,13 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 if (exh.venues && exh.venues.length) meta.push(exh.venues.join(', '));
                 var counts = [];
                 if (exh.installimage_count) counts.push(exh.installimage_count + ' install');
-                if (exh.artwork_count) counts.push(exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's'));
+                if (exh.artwork_count) {
+                    var artworkLabel = exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's');
+                    if (typeof exh.artwork_count_confirmed === 'number' && exh.artwork_count_confirmed > 0 && exh.artwork_count_confirmed < exh.artwork_count) {
+                        artworkLabel += ' (' + exh.artwork_count_confirmed + ' confirmed)';
+                    }
+                    counts.push(artworkLabel);
+                }
                 if (exh.pressrelease_count) counts.push(exh.pressrelease_count + ' press release' + (exh.pressrelease_count === 1 ? '' : 's'));
                 var thumb = exh.thumbURL ? self.imgproxyPreview(exh.thumbURL) : '';
                 var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
@@ -817,8 +894,6 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
         }
 
         function renderExhibitionDetail(data) {
-            var exh = data.exhibition || {};
-
             // Hide artworks with no uploaded image — bulk-download counts and the
             // rendered grid should both ignore placeholder inventory rows.
             if (data.hits && data.hits.length && self.hasImportableImage) {
@@ -827,74 +902,53 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 });
             }
 
-            var bits = [];
-            if (exh.artists && exh.artists.length) bits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
-            bits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');
-            var sub = [];
-            if (exh.date_display) sub.push(exh.date_display);
-            if (exh.venues && exh.venues.length) sub.push(exh.venues.join(', '));
-            if (sub.length) bits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
+            currentExh = data.exhibition || {};
+            currentHits = data.hits || [];
+            currentPressReleases = data.pressreleases || [];
 
-            pressReleases = {};
-            if (data.pressreleases && data.pressreleases.length) {
-                var prRow = '<div class="wlexh-pr-row">';
-                $.each(data.pressreleases, function(k, pr) {
-                    pressReleases[pr.id] = pr.text || '';
-                    var label = pr.title && pr.title.length ? pr.title : 'Press Release';
-                    prRow += '<button type="button" class="button wlexh-pr-btn" data-pr-id="' + pr.id + '">' +
-                                '<span class="wlexh-pr-label">' + escapeHtml(label) + '</span>' +
-                                '<span class="wlexh-pr-hint">copy HTML</span>' +
-                             '</button>';
-                });
-                prRow += '</div>';
-                bits.push(prRow);
-            }
+            // Default to "confirmed only" when at least one confirmed artwork
+            // exists — usually the unconfirmed roster is still being curated.
+            confirmedOnly = currentHits.some(function(h) { return h.confirmed === true; });
 
-            var counts = countImportable(data.hits || []);
-            if (counts.installs > 0 || counts.artworks > 0) {
-                var bulkRow = '<div class="wlexh-bulk-row">';
-                if (counts.installs > 0) {
-                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="installs">Download all installation views <span class="wlexh-bulk-count">(' + counts.installs + ')</span></button>';
-                }
-                if (counts.artworksFirst > 0) {
-                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="artworks-first">Download first image of each artwork <span class="wlexh-bulk-count">(' + counts.artworksFirst + ')</span></button>';
-                }
-                if (counts.artworks > 0) {
-                    bulkRow += '<button type="button" class="button wlexh-bulk-btn" data-scope="artworks">Download all artworks <span class="wlexh-bulk-count">(' + counts.artworks + ')</span></button>';
-                }
-                if (counts.installs > 0 && counts.artworks > 0) {
-                    bulkRow += '<button type="button" class="button button-primary wlexh-bulk-btn" data-scope="all">Download all <span class="wlexh-bulk-count">(' + (counts.installs + counts.artworks) + ')</span></button>';
-                }
-                bulkRow += '</div>';
-                bits.push(bulkRow);
-            }
+            renderDetailHeader();
+            $items.toggleClass('wrklst-show-confirmed-only', !!confirmedOnly);
 
-            $header.html(bits.join(''));
-
-            if (!data.hits || !data.hits.length) {
+            if (!currentHits.length) {
                 $items.html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No images or artworks ——</div>');
                 return;
             }
             var html = '';
-            $.each(data.hits, function(k, hit) {
+            $.each(currentHits, function(k, hit) {
                 html += self.renderWorkItem(hit);
             });
             $items.html(html);
         }
+
+        $header.on('change', '.wlexh-confirmed-only', function() {
+            confirmedOnly = $(this).is(':checked');
+            $items.toggleClass('wrklst-show-confirmed-only', !!confirmedOnly);
+            renderDetailHeader();
+        });
 
         $header.on('click', '.wlexh-bulk-btn', function(e) {
             e.preventDefault();
             var scope = $(this).data('scope');
             var $candidates;
 
+            // Treat unconfirmed inventory items as out of scope when the filter
+            // is on. Install images never get the unconfirmed class.
+            var applyConfirmedFilter = function($set) {
+                return confirmedOnly ? $set.not('.unconfirmed') : $set;
+            };
+
             if (scope === 'artworks-first') {
                 var seen = {};
                 var picks = [];
-                $items.find('.item.upload')
+                applyConfirmedFilter($items.find('.item.upload')
                     .not('.multiimg')
                     .not('.uploading')
                     .not('.doneuploading')
-                    .not('.ender')
+                    .not('.ender'))
                     .each(function() {
                         var importId = String($(this).data('import_source_id') || '');
                         if (importId.indexOf('exh-') === 0) return;
@@ -904,12 +958,12 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                     });
                 $candidates = $(picks);
             } else {
-                $candidates = $items.find('.item.upload')
+                $candidates = applyConfirmedFilter($items.find('.item.upload')
                     .not('.multiimg')
                     .not('.exists')
                     .not('.uploading')
                     .not('.doneuploading')
-                    .not('.ender')
+                    .not('.ender'))
                     .filter(function() {
                         var importId = String($(this).data('import_source_id') || '');
                         var isInstall = importId.indexOf('exh-') === 0;

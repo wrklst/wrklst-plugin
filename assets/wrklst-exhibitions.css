@@ -122,3 +122,39 @@
 .wrklst-bulk-btn.button-primary .wrklst-bulk-count {
     color: rgba(255, 255, 255, .85);
 }
+
+.wrklst-confirmed-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 4px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.wrklst-confirmed-toggle input {
+    margin: 0 4px 0 0;
+}
+
+.wrklst-confirmed-toggle-counts {
+    color: #888;
+    font-variant-numeric: tabular-nums;
+}
+
+.wrklst-confirmed-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    margin-bottom: 4px;
+    background: #2c8a3a;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.wrklst-show-confirmed-only .item.unconfirmed {
+    display: none !important;
+}

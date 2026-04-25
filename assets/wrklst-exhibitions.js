@@ -94,6 +94,12 @@
                 self.bulkDownload($(this).data('scope'));
             });
 
+            this.$detailHeader.on('change', '.wrklst-confirmed-only', function() {
+                self.confirmedOnly = $(this).is(':checked');
+                self.applyConfirmedFilter();
+                self.renderDetailHeader();
+            });
+
             this.$detailResults.on('click', '.upload.multiimg', function() {
                 var id = $(this).data('import_source_id');
                 $('.subitemid' + id).each(function() { $(this).toggleClass('hidden'); });
@@ -171,7 +177,13 @@
                 if (exh.venues && exh.venues.length) meta.push(exh.venues.join(', '));
                 var counts = [];
                 if (exh.installimage_count) counts.push(exh.installimage_count + ' install image' + (exh.installimage_count === 1 ? '' : 's'));
-                if (exh.artwork_count) counts.push(exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's'));
+                if (exh.artwork_count) {
+                    var artworkLabel = exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's');
+                    if (typeof exh.artwork_count_confirmed === 'number' && exh.artwork_count_confirmed > 0 && exh.artwork_count_confirmed < exh.artwork_count) {
+                        artworkLabel += ' (' + exh.artwork_count_confirmed + ' confirmed)';
+                    }
+                    counts.push(artworkLabel);
+                }
                 if (exh.pressrelease_count) counts.push(exh.pressrelease_count + ' press release' + (exh.pressrelease_count === 1 ? '' : 's'));
 
                 var thumb = exh.thumbURL ? self.imgproxyPreview(exh.thumbURL) : '';
@@ -244,6 +256,23 @@
                 });
             }
 
+            this._currentExhibition = exh;
+            this._currentHits = data.hits || [];
+            this._currentPressReleases = data.pressreleases || [];
+
+            // Default to "confirmed only" when at least one confirmed artwork exists,
+            // since the unconfirmed roster is usually still being curated.
+            var hasConfirmed = this._currentHits.some(function(h) { return h.confirmed === true; });
+            this.confirmedOnly = hasConfirmed;
+
+            this.renderDetailHeader();
+            this.renderDetailHits();
+            this.applyConfirmedFilter();
+        },
+
+        renderDetailHeader: function() {
+            var self = this;
+            var exh = this._currentExhibition || {};
             var headerBits = [];
             if (exh.artists && exh.artists.length) headerBits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
             headerBits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');
@@ -253,9 +282,9 @@
             if (sub.length) headerBits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
 
             this.pressReleases = {};
-            if (data.pressreleases && data.pressreleases.length) {
+            if (this._currentPressReleases.length) {
                 var prButtons = '<div class="wrklst-pr-row">';
-                $.each(data.pressreleases, function(k, pr) {
+                $.each(this._currentPressReleases, function(k, pr) {
                     self.pressReleases[pr.id] = pr.text || '';
                     var label = pr.title && pr.title.length ? pr.title : 'Press Release';
                     prButtons += '<button type="button" class="button wrklst-pr-btn" data-pr-id="' + pr.id + '">' +
@@ -267,7 +296,19 @@
                 headerBits.push(prButtons);
             }
 
-            var counts = self.countImportable(data.hits || []);
+            var totalConfirmed = this._currentHits.filter(function(h) { return h.confirmed === true; }).length;
+            var totalUnconfirmed = this._currentHits.filter(function(h) { return h.confirmed === false; }).length;
+            if (totalConfirmed + totalUnconfirmed > 0) {
+                headerBits.push(
+                    '<label class="wrklst-confirmed-toggle">' +
+                        '<input type="checkbox" class="wrklst-confirmed-only"' + (this.confirmedOnly ? ' checked' : '') + '> ' +
+                        'Confirmed only ' +
+                        '<span class="wrklst-confirmed-toggle-counts">(' + totalConfirmed + ' confirmed / ' + totalUnconfirmed + ' unconfirmed)</span>' +
+                    '</label>'
+                );
+            }
+
+            var counts = self.countImportable(this._currentHits, { confirmedOnly: this.confirmedOnly });
             if (counts.installs > 0 || counts.artworks > 0) {
                 var bulkRow = '<div class="wrklst-bulk-row">';
                 if (counts.installs > 0) {
@@ -287,17 +328,23 @@
             }
 
             this.$detailHeader.html(headerBits.join(''));
+        },
 
-            if (!data.hits || !data.hits.length) {
+        renderDetailHits: function() {
+            var self = this;
+            if (!this._currentHits.length) {
                 this.$detailResults.html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No images or artworks ——</div>');
                 return;
             }
-
             var html = '';
-            $.each(data.hits, function(k, hit) {
+            $.each(this._currentHits, function(k, hit) {
                 html += self.renderWorkItem(hit);
             });
             this.$detailResults.html(html);
+        },
+
+        applyConfirmedFilter: function() {
+            this.$detailResults.toggleClass('wrklst-show-confirmed-only', !!this.confirmedOnly);
         },
 
         escapeHtml: function(s) {
@@ -306,12 +353,16 @@
             });
         },
 
-        countImportable: function(hits) {
+        countImportable: function(hits, opts) {
+            var confirmedOnly = !!(opts && opts.confirmedOnly);
             var installs = 0;
             var artworks = 0;
             var artworksFirst = 0;
             $.each(hits, function(k, hit) {
                 var isInstall = hit.item_kind === 'installimage' || (typeof hit.import_source_id === 'string' && hit.import_source_id.indexOf('exh-') === 0);
+                // Install images don't carry a confirmed flag, so the toggle only
+                // narrows the artwork side.
+                if (!isInstall && confirmedOnly && hit.confirmed !== true) return;
                 if (hit.multi_img) {
                     if (isInstall) return;
                     $.each(hit.imgs || [], function(i, img) {
@@ -334,15 +385,23 @@
 
         bulkDownload: function(scope) {
             var $items;
+            var confirmedOnly = !!this.confirmedOnly;
+
+            // Treat unconfirmed inventory items as out of scope when the filter
+            // is on. Install images never get the unconfirmed class, so the
+            // .not('.unconfirmed') chain is a no-op for them.
+            var applyConfirmedFilter = function($set) {
+                return confirmedOnly ? $set.not('.unconfirmed') : $set;
+            };
 
             if (scope === 'artworks-first') {
                 var seen = {};
                 var picks = [];
-                this.$detailResults.find('.item.upload')
+                applyConfirmedFilter(this.$detailResults.find('.item.upload')
                     .not('.multiimg')
                     .not('.uploading')
                     .not('.doneuploading')
-                    .not('.ender')
+                    .not('.ender'))
                     .each(function() {
                         var importId = String($(this).data('import_source_id') || '');
                         if (importId.indexOf('exh-') === 0) return;
@@ -352,12 +411,12 @@
                     });
                 $items = $(picks);
             } else {
-                $items = this.$detailResults.find('.item.upload')
+                $items = applyConfirmedFilter(this.$detailResults.find('.item.upload')
                     .not('.multiimg')
                     .not('.exists')
                     .not('.uploading')
                     .not('.doneuploading')
-                    .not('.ender')
+                    .not('.ender'))
                     .filter(function() {
                         var importId = String($(this).data('import_source_id') || '');
                         var isInstall = importId.indexOf('exh-') === 0;
