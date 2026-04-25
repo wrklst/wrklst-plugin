@@ -31,6 +31,10 @@ media.view.MediaFrame.Select.prototype.browseRouter = function( view ) {
             text:     'Import WrkLst Work',
             priority: 30
         },
+        wlexhibition: {
+            text:     'Import from Exhibition',
+            priority: 35
+        },
         browse: {
             text:     l10n.mediaLibraryTitle,
             priority: 40
@@ -46,6 +50,7 @@ media.view.MediaFrame.Select.prototype.bindHandlers = function() {
     bindHandlers.apply( this, arguments );
     // bind our create handler.
     this.on( 'content:create:wlwork', this.wlworkContent, this );
+    this.on( 'content:create:wlexhibition', this.wlexhibitionContent, this );
     frame = this;
 };
 media.view.MediaFrame.Select.prototype.wlworkContent = function( content ){
@@ -54,6 +59,12 @@ media.view.MediaFrame.Select.prototype.wlworkContent = function( content ){
     this.$el.removeClass('hide-toolbar');
     wlWork = new media.view.wlWork({});
     content.view = wlWork;
+}
+
+media.view.MediaFrame.Select.prototype.wlexhibitionContent = function( content ){
+    var state = this.state();
+    this.$el.removeClass('hide-toolbar');
+    content.view = new media.view.wlExhibition({});
 }
 
 
@@ -549,6 +560,261 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                     attachment = wp.media.attachment(data.id);
                     attachment.fetch();
                     selection.add( attachment ? [ attachment ] : [] );
+                });
+            }
+            return false;
+        });
+    }
+});
+
+media.view.wlExhibition = media.view.WrkLstBase.extend({
+    tagName:   'div',
+    className: 'wl-exhibition',
+    id: 'wlexhibitioncontainer',
+    initialize: function() {
+        _.defaults(this.options, {});
+        this.buildInterface();
+    },
+    buildInterface: function() {
+        var self = this;
+
+        if (!$('#wrklst-media-picker-styles').length) {
+            // Reuse the work tab's stylesheet by triggering wlWork's build implicitly is not possible,
+            // so duplicate the minimum needed styles for the exhibition picker grid.
+            $('head').append('<style id="wrklst-media-picker-styles-exh">' +
+                '.wlexh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}' +
+                '.wlexh-card{background:#fff;border:1px solid #ddd;border-radius:4px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}' +
+                '.wlexh-card:hover{border-color:#888;box-shadow:0 2px 6px rgba(0,0,0,.08)}' +
+                '.wlexh-thumb{aspect-ratio:4/3;background:#f3f3f3;display:flex;align-items:center;justify-content:center;overflow:hidden}' +
+                '.wlexh-thumb img{width:100%;height:100%;object-fit:cover}' +
+                '.wlexh-thumb-empty{color:#bbb;font-size:13px}' +
+                '.wlexh-meta{padding:8px 10px}' +
+                '.wlexh-artists{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.03em}' +
+                '.wlexh-title{font-size:14px;font-weight:600;line-height:1.3;margin-top:2px}' +
+                '.wlexh-sub,.wlexh-counts{font-size:11px;color:#777;margin-top:3px}' +
+                '.wlexh-back{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#555;font-size:13px;margin:8px 0}' +
+                '.wlexh-back:hover{color:#000}' +
+                '.hidden{display:none !important}' +
+                '</style>');
+        }
+
+        var html = ''
+            + '<div style="padding:10px 10px 10px 10px">'
+            +   '<div class="wlexh-picker">'
+            +     '<form class="wlexh-form" style="margin:0">'
+            +       '<div style="line-height:1.5;margin:1em 0;max-width:500px;position:relative">'
+            +         '<input class="wlexh-search" type="text" value="" style="width:100%;padding:7px 32px 7px 9px" placeholder="Search exhibitions">'
+            +         '<button type="submit" style="background:#fff;border:0;cursor:pointer;position:absolute;right:0px;top:1px;outline:0" title="Search">🔍</button>'
+            +       '</div>'
+            +     '</form>'
+            +     '<div class="wlexh-grid wlexh-results"></div>'
+            +   '</div>'
+            +   '<div class="wlexh-detail hidden">'
+            +     '<a href="#" class="wlexh-back">← Back to exhibitions</a>'
+            +     '<div class="wlexh-header" style="margin:1em 0"></div>'
+            +     '<div class="wlexh-items flex-images" style="margin-top:15px;"></div>'
+            +   '</div>'
+            + '</div>';
+
+        this.$el.html(html);
+
+        var $picker = this.$('.wlexh-picker');
+        var $detail = this.$('.wlexh-detail');
+        var $form = this.$('.wlexh-form');
+        var $search = this.$('.wlexh-search');
+        var $results = this.$('.wlexh-results');
+        var $items = this.$('.wlexh-items');
+        var $header = this.$('.wlexh-header');
+        var $back = this.$('.wlexh-back');
+
+        var perPage = 30,
+            page = 1,
+            searchQuery = '',
+            lastCall = '',
+            wrklstSecurityNonce = false,
+            currentExhibitionId = null;
+
+        if (self.getCookie('wrklst_exh_search_query')) {
+            $search.val(self.getCookie('wrklst_exh_search_query'));
+        }
+
+        var iconBase = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/') + 'assets/img/';
+
+        self.getApiCredentials(function(nonce) {
+            wrklstSecurityNonce = nonce;
+            $form.submit();
+        });
+
+        var scrollHandler = function() {
+            if ($('.media-frame-content').first().scrollTop() + $('.media-frame-content').first().height() > $('.wl-exhibition').first().height() - 400) {
+                $('.media-frame-content').first().off('scroll', scrollHandler);
+                page = page + 1;
+                requestExhibitions();
+            }
+        };
+
+        $form.submit(function(e) {
+            e.preventDefault();
+            page = 1;
+            searchQuery = $search.val();
+            $results.html('');
+            $('.media-frame-content').first().off('scroll', scrollHandler);
+            requestExhibitions();
+        });
+
+        $search.keyup($.debounce(600, function() {
+            self.setCookie('wrklst_exh_search_query', $search.val(), 365);
+            if (searchQuery !== $search.val()) $form.submit();
+        }));
+
+        function requestExhibitions() {
+            var urlCall = perPage + '|' + page + '|' + encodeURIComponent(searchQuery) + '|' + wrklstSecurityNonce;
+            if (lastCall === urlCall) return false;
+
+            WrkLstAjax.getExhibitions({
+                per_page: perPage,
+                page: page,
+                search: searchQuery,
+                wpnonce: wrklstSecurityNonce
+            }, function(data) {
+                if (!data || !(data.totalHits > 0)) {
+                    $results.html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No exhibitions found ——</div>');
+                    $('#wlexh_show_animation').remove();
+                    return;
+                }
+                renderExhibitions(data);
+                lastCall = urlCall;
+            });
+            return false;
+        }
+
+        function renderExhibitions(data) {
+            var pages = Math.ceil(data.totalHits / perPage);
+            var html = '';
+            $.each(data.hits, function(k, exh) {
+                var meta = [];
+                if (exh.date_display) meta.push(exh.date_display);
+                if (exh.venues && exh.venues.length) meta.push(exh.venues.join(', '));
+                var counts = [];
+                if (exh.installimage_count) counts.push(exh.installimage_count + ' install');
+                if (exh.artwork_count) counts.push(exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's'));
+                var thumb = exh.thumbURL ? self.imgproxyThumb(exh.thumbURL, self.THUMB_SIZE) : '';
+                var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
+
+                html += '<div class="wlexh-card" data-exhibition-id="' + exh.id + '">'
+                     +   '<div class="wlexh-thumb">'
+                     +     (thumb ? '<img src="' + thumb + '" alt="">' : '<div class="wlexh-thumb-empty">No image</div>')
+                     +   '</div>'
+                     +   '<div class="wlexh-meta">'
+                     +     (artistsLine ? '<div class="wlexh-artists">' + artistsLine + '</div>' : '')
+                     +     '<div class="wlexh-title">' + (exh.title || exh.display || '') + '</div>'
+                     +     (meta.length ? '<div class="wlexh-sub">' + meta.join(' · ') + '</div>' : '')
+                     +     (counts.length ? '<div class="wlexh-counts">' + counts.join(' · ') + '</div>' : '')
+                     +   '</div>'
+                     + '</div>';
+            });
+            $results.html($results.html() + html);
+            $('#wlexh_show_animation').remove();
+            if (page < pages) {
+                $results.after('<div id="wlexh_show_animation" style="clear:both;padding:15px 0 0;text-align:center"><img style="width:60px" src="' + iconBase + 'baseline-autorenew-24px.svg" class="loading-rotator"></div>');
+                $('.media-frame-content').first().scroll(scrollHandler);
+            }
+        }
+
+        $results.on('click', '.wlexh-card', function() {
+            var id = $(this).data('exhibition-id');
+            if (id) openExhibition(id);
+        });
+
+        $back.on('click', function(e) {
+            e.preventDefault();
+            closeExhibition();
+        });
+
+        function openExhibition(id) {
+            currentExhibitionId = id;
+            $picker.addClass('hidden');
+            $detail.removeClass('hidden');
+            $header.html('<div style="color:#888">Loading…</div>');
+            $items.html('');
+
+            WrkLstAjax.getExhibitionItems({
+                exhibition_id: id,
+                wpnonce: wrklstSecurityNonce
+            }, function(data) {
+                renderExhibitionDetail(data);
+            });
+        }
+
+        function closeExhibition() {
+            currentExhibitionId = null;
+            $detail.addClass('hidden');
+            $picker.removeClass('hidden');
+            $items.html('');
+            $header.html('');
+        }
+
+        function renderExhibitionDetail(data) {
+            var exh = data.exhibition || {};
+            var bits = [];
+            if (exh.artists && exh.artists.length) bits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
+            bits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');
+            var sub = [];
+            if (exh.date_display) sub.push(exh.date_display);
+            if (exh.venues && exh.venues.length) sub.push(exh.venues.join(', '));
+            if (sub.length) bits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
+            $header.html(bits.join(''));
+
+            if (!data.hits || !data.hits.length) {
+                $items.html('<div style="color:#bbb;font-size:24px;text-align:center;margin:40px 0">—— No images or artworks ——</div>');
+                return;
+            }
+            var html = '';
+            $.each(data.hits, function(k, hit) {
+                html += self.renderWorkItem(hit);
+            });
+            $items.html(html);
+        }
+
+        $items.on('click', '.upload.multiimg', function() {
+            var id = $(this).data('import_source_id');
+            $('.subitemid' + id).each(function() { $(this).toggleClass('hidden'); });
+            $('.itemid' + id).each(function() { $(this).toggleClass('open'); });
+        });
+
+        $items.on('click', '.item.ender', function(e) {
+            e.stopPropagation();
+            var importSourceId = $(this).data('import_source_id');
+            $('.subitemid' + importSourceId).addClass('hidden');
+            $('.itemid' + importSourceId).removeClass('open');
+        });
+
+        $items.on('click', '.upload:not(.doneuploading)', function() {
+            if (!$(this).hasClass('uploading') && !$(this).hasClass('doneuploading') && !$(this).hasClass('multiimg')) {
+                $(this).addClass('uploading').find('.dlimg img').replaceWith('<img src="' + iconBase + 'baseline-autorenew-24px.svg" class="loading-rotator" style="height:80px !important">');
+
+                var that = $(this);
+                var uploadData = {
+                    image_url: $(this).data('url'),
+                    image_caption: $(this).data('caption'),
+                    image_description: $(this).data('description'),
+                    image_alt: $(this).data('alt'),
+                    title: $(this).data('title'),
+                    invnr: $(this).data('invnr'),
+                    artist: $(this).data('artist'),
+                    import_source_id: $(this).data('import_source_id'),
+                    image_id: $(this).data('image_id'),
+                    import_inventory_id: $(this).data('import_inventory_id'),
+                    search_query: searchQuery,
+                    wpnonce: $(this).data('wpnonce')
+                };
+
+                self.uploadImage(uploadData, function(data) {
+                    that.addClass('doneuploading').find('.dlimg img').replaceWith('<img src="' + iconBase + 'baseline-check-24px.svg" style="height:50px !important">');
+                    var selection = frame.state().get('selection');
+                    var attachment = wp.media.attachment(data.id);
+                    attachment.fetch();
+                    selection.add(attachment ? [attachment] : []);
                 });
             }
             return false;

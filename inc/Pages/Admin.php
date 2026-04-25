@@ -30,6 +30,14 @@ class Admin extends BaseController
         $this->subpages = [
             [
                 'parent_slug' => 'wrklst_works',
+                'page_title' => 'Exhibitions',
+                'menu_title' => 'Exhibitions',
+                'capability' => 'manage_options',
+                'menu_slug' => 'wrklst_exhibitions',
+                'callback' => [$this->callbacks,'adminExhibitions'],
+            ],
+            [
+                'parent_slug' => 'wrklst_works',
                 'page_title' => 'Settings',
                 'menu_title' => 'Settings',
                 'capability' => 'manage_options',

@@ -56,6 +56,13 @@ class Enqueue extends BaseController
             wp_enqueue_script('wrklst-works', $this->plugin_url . 'assets/wrklst-works.js', array('jquery', 'wrklst-ajax', 'wrklst-debounce', 'wrklst-base'), WRKLST_PLUGIN_VERSION, true);
             wp_enqueue_style('wrklst-works', $this->plugin_url . 'assets/wrklst-works.css', array(), WRKLST_PLUGIN_VERSION);
         }
+
+        // Enqueue exhibitions page script and styles if on that page
+        if (isset($_GET['page']) && $_GET['page'] === 'wrklst_exhibitions') {
+            wp_enqueue_script('wrklst-exhibitions', $this->plugin_url . 'assets/wrklst-exhibitions.js', array('jquery', 'wrklst-ajax', 'wrklst-debounce', 'wrklst-base'), WRKLST_PLUGIN_VERSION, true);
+            wp_enqueue_style('wrklst-works', $this->plugin_url . 'assets/wrklst-works.css', array(), WRKLST_PLUGIN_VERSION);
+            wp_enqueue_style('wrklst-exhibitions', $this->plugin_url . 'assets/wrklst-exhibitions.css', array(), WRKLST_PLUGIN_VERSION);
+        }
     }
     
     function enqueue_media_scripts() {

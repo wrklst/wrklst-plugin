@@ -12,6 +12,8 @@ class AjaxHandler extends BaseController
         'wrklst_api_cred' => 'handle_api_credentials',
         'wrklst_get_inventories' => 'handle_get_inventories',
         'wrklst_get_inv_items' => 'handle_get_inventory_items',
+        'wrklst_get_exhibitions' => 'handle_get_exhibitions',
+        'wrklst_get_exhibition_items' => 'handle_get_exhibition_items',
         'wrklst_upload' => 'handle_image_upload',
     ];
 
@@ -185,10 +187,14 @@ class AjaxHandler extends BaseController
         }
 
         $check_ids = array_column($data['hits'], 'import_source_id');
-        
+
         if (empty($check_ids)) {
             return $data;
         }
+
+        $check_ids = array_values(array_unique(array_map(function ($id) {
+            return sanitize_text_field((string) $id);
+        }, $check_ids)));
 
         $args = [
             'post_status' => 'inherit',
@@ -197,7 +203,7 @@ class AjaxHandler extends BaseController
             'meta_query' => [
                 [
                     'key' => 'wrklst_id',
-                    'value' => array_map('absint', $check_ids),
+                    'value' => $check_ids,
                     'compare' => 'IN',
                 ],
             ],
@@ -246,7 +252,7 @@ class AjaxHandler extends BaseController
                 'meta_query' => [
                     [
                         'key' => 'wrklst_id',
-                        'value' => absint($hit['import_source_id']),
+                        'value' => sanitize_text_field((string) $hit['import_source_id']),
                     ],
                     [
                         'key' => 'wrklst_image_id',
@@ -266,6 +272,105 @@ class AjaxHandler extends BaseController
         return $exists_count;
     }
 
+    public function handle_get_exhibitions()
+    {
+        $this->verify_nonce();
+        $this->check_permissions();
+
+        $per_page = isset($_POST['per_page']) ? absint($_POST['per_page']) : 30;
+        $page = isset($_POST['page']) ? absint($_POST['page']) : 1;
+        $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+
+        $wrklst_settings = get_option('wrklst_options');
+        if (empty($wrklst_settings['api']) || empty($wrklst_settings['account'])) {
+            wp_send_json_error(['message' => __('API settings not configured', 'wrklst-plugin')], 500);
+        }
+
+        $api_key = sanitize_text_field($wrklst_settings['api']);
+        $account = sanitize_text_field($wrklst_settings['account']);
+        $wrklst_url = 'https://' . $account . '.wrklst.com';
+
+        $cache_key = sprintf('wrklst_exh_list_%d|%d|%s', $per_page, $page, $search);
+        $data = wp_cache_get($cache_key);
+
+        if (false === $data) {
+            $response = wp_remote_get(
+                add_query_arg(
+                    [
+                        'token' => $api_key,
+                        'per_page' => $per_page,
+                        'page' => $page,
+                        'search' => $search,
+                    ],
+                    $wrklst_url . '/ext/api/wordpress/exhibitions'
+                ),
+                ['timeout' => 30]
+            );
+
+            if (is_wp_error($response)) {
+                wp_send_json_error(['message' => $response->get_error_message()], 500);
+            }
+
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                wp_send_json_error(['message' => __('Invalid API response', 'wrklst-plugin')], 500);
+            }
+
+            wp_cache_set($cache_key, $data, '', 60);
+        }
+
+        wp_send_json_success($data);
+    }
+
+    public function handle_get_exhibition_items()
+    {
+        $this->verify_nonce();
+        $this->check_permissions();
+
+        $exhibition_id = isset($_POST['exhibition_id']) ? absint($_POST['exhibition_id']) : 0;
+        if ($exhibition_id < 1) {
+            wp_send_json_error(['message' => __('Invalid exhibition id', 'wrklst-plugin')], 400);
+        }
+
+        $wrklst_settings = get_option('wrklst_options');
+        if (empty($wrklst_settings['api']) || empty($wrklst_settings['account'])) {
+            wp_send_json_error(['message' => __('API settings not configured', 'wrklst-plugin')], 500);
+        }
+
+        $api_key = sanitize_text_field($wrklst_settings['api']);
+        $account = sanitize_text_field($wrklst_settings['account']);
+        $wrklst_url = 'https://' . $account . '.wrklst.com';
+
+        $cache_key = 'wrklst_exh_items_' . $exhibition_id;
+        $data = wp_cache_get($cache_key);
+
+        if (false === $data) {
+            $query_args = ['token' => $api_key];
+            if (!empty($wrklst_settings['workdcaptioninvnr'])) {
+                $query_args['incinvnr'] = 1;
+            }
+
+            $response = wp_remote_get(
+                add_query_arg($query_args, $wrklst_url . '/ext/api/wordpress/exhibitions/' . $exhibition_id),
+                ['timeout' => 30]
+            );
+
+            if (is_wp_error($response)) {
+                wp_send_json_error(['message' => $response->get_error_message()], 500);
+            }
+
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                wp_send_json_error(['message' => __('Invalid API response', 'wrklst-plugin')], 500);
+            }
+
+            wp_cache_set($cache_key, $data, '', 30);
+        }
+
+        $data = $this->process_inventory_data($data);
+        wp_send_json_success($data);
+    }
+
     public function handle_image_upload()
     {
         $this->verify_nonce();
@@ -282,7 +387,7 @@ class AjaxHandler extends BaseController
         $caption = isset($_POST['image_caption']) ? sanitize_textarea_field($_POST['image_caption']) : '';
         $description = isset($_POST['image_description']) ? sanitize_textarea_field($_POST['image_description']) : '';
         $alt_text = isset($_POST['image_alt']) ? sanitize_text_field($_POST['image_alt']) : '';
-        $import_source_id = isset($_POST['import_source_id']) ? absint($_POST['import_source_id']) : 0;
+        $import_source_id = isset($_POST['import_source_id']) ? sanitize_text_field((string) $_POST['import_source_id']) : '';
         $image_id = isset($_POST['image_id']) ? absint($_POST['image_id']) : 0;
         $import_inventory_id = isset($_POST['import_inventory_id']) ? absint($_POST['import_inventory_id']) : 0;
         $search_query = isset($_POST['search_query']) ? sanitize_text_field($_POST['search_query']) : '';

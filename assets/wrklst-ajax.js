@@ -97,6 +97,20 @@
         },
 
         /**
+         * Get exhibitions list
+         */
+        getExhibitions: function(params, callback) {
+            this.request('wrklst_get_exhibitions', params, callback);
+        },
+
+        /**
+         * Get items for one exhibition (install images + artworks)
+         */
+        getExhibitionItems: function(params, callback) {
+            this.request('wrklst_get_exhibition_items', params, callback);
+        },
+
+        /**
          * Upload image
          */
         uploadImage: function(params, callback) {

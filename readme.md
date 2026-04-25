@@ -88,6 +88,12 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.2
+- Added an "Exhibitions" tab/subpage with a two-step picker → detail UX: select an exhibition, then browse its installation images and artworks side-by-side
+- Added the same Exhibitions tab inside the WordPress Media Library uploader so install images and exhibition artworks can be pulled directly into Media at insert time
+- Backend API: new `/ext/api/wordpress/exhibitions` and `/ext/api/wordpress/exhibitions/{id}` endpoints that shape installation images and artworks with the same fields as the existing inventory hits, so the renderer and import path are reused unchanged
+- Namespaced installation-image source IDs (`exh-{id}-{mediaId}`) so dedup against the WP media library does not collide with inventory IDs
+
 ### 3.1
 - Added "Image Format" setting (JPEG/WebP) on the WrkLst settings page; chosen format is applied to imgproxy URLs for thumbnails and uploaded copies (default: JPEG)
 - Switched media library thumbnails to imgproxy `rs:fit:500:0` (matches the WrkLst overview cache) and uploaded copies to `rs:fit:2500:0`

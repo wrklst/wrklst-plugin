@@ -12,6 +12,11 @@ class AdminCallbacks extends BaseController
         return require_once $this->plugin_path.'templates/works.php';
     }
 
+    public function adminExhibitions()
+    {
+        return require_once $this->plugin_path.'templates/exhibitions.php';
+    }
+
     public function adminSettings()
     {
         return require_once $this->plugin_path.'templates/settings.php';
