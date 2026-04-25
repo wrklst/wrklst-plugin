@@ -88,6 +88,12 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.1
+- Added "Image Format" setting (JPEG/WebP) on the WrkLst settings page; chosen format is applied to imgproxy URLs for thumbnails and uploaded copies (default: JPEG)
+- Switched media library thumbnails to imgproxy `rs:fit:500:0` (matches the WrkLst overview cache) and uploaded copies to `rs:fit:2500:0`
+- Accepted `images.wrklst.com` alongside `img.wrklst.com` on the upload endpoint
+- Slimmed bundled `vendor/` (excluded tests/fixtures/dev metadata) and documented the commit-vendor policy
+
 ### 3.0
 - Complete refactor using WordPress Backbone.js framework
 - Improved multi-image artwork support
