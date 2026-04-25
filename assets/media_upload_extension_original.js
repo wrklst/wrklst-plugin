@@ -7,17 +7,26 @@ var media = wp.media,
 
 var THUMB_SIZE = 500;
 var UPLOAD_SIZE = 2500;
+// Must match the imgproxy URL wrklst-app uses for overview thumbnails so previews
+// hit the existing cache and imgproxy does not generate extra variants. wrklst-app
+// builds overview thumbs as `rs:fit:500:0/plain/.../<path>@webp` via ImgproxyService.
+var PREVIEW_FORMAT = 'webp';
 function imgproxyFormat() {
     return (typeof wrklst_image_config !== 'undefined' && wrklst_image_config.format) ? wrklst_image_config.format : 'jpg';
 }
-function imgproxyThumb(url, width) {
+function imgproxyUrl(url, width, fmt) {
     if (!url) return url;
     var i = url.indexOf('/plain/');
     if (i === -1) return url.replace('_150', '_' + width);
     var rest = url.slice(i);
-    var fmt = imgproxyFormat();
     rest = /@[a-zA-Z0-9]+$/.test(rest) ? rest.replace(/@[a-zA-Z0-9]+$/, '@' + fmt) : rest + '@' + fmt;
     return url.slice(0, i) + '/rs:fit:' + width + ':0' + rest;
+}
+function imgproxyPreview(url) {
+    return imgproxyUrl(url, THUMB_SIZE, PREVIEW_FORMAT);
+}
+function imgproxyThumb(url, width) {
+    return imgproxyUrl(url, width, imgproxyFormat());
 }
 
 // override router creation
@@ -465,7 +474,7 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                 if(v.multi_img=="1") {
                     
                     image_item += '<div class="item itemid'+v.import_source_id+' upload multiimg'+(v.exists===2?' exists':(v.exists?' existsp':''))+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+imgproxyThumb(v.largeImageURL || v.url_full, UPLOAD_SIZE)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+(v.imageId || 0)+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.photocredit || '')+'" data-w="'+(v.webformatWidth || 0)+'" data-h="'+(v.webformatHeight || 0)+'">'
-                        +'<img src="'+imgproxyThumb(v.previewURL || v.url_thumb, THUMB_SIZE)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
+                        +'<img src="'+imgproxyPreview(v.previewURL || v.url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
                         +'<div class="dlimg">'
                             +'<img src="'+getIconPath('baseline-more_horiz-24px.svg')+'" class="more">'
                             +'<img src="'+getIconPath('baseline-arrow_forward_ios-24px.svg')+'" class="open">'
@@ -476,7 +485,7 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                     var iconBase = getIconPath('');
                     for(i=0;i<v.imgs.length;i++) {
                         image_item += '<div class="subitem hidden subitemid'+v.import_source_id+' item upload'+(v.imgs[i].exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+imgproxyThumb(v.imgs[i].largeImageURL || v.imgs[i].url_full, UPLOAD_SIZE)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imgs[i].id+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.imgs[i].photocredit || '')+'" data-w="'+(v.imgs[i].webformatWidth || 0)+'" data-h="'+(v.imgs[i].webformatHeight || 0)+'">'
-                            +'<img src="'+imgproxyThumb(v.imgs[i].previewURL || v.imgs[i].url_thumb, THUMB_SIZE)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
+                            +'<img src="'+imgproxyPreview(v.imgs[i].previewURL || v.imgs[i].url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
                             +'<div class="dlimg">'
                                 +'<img src="'+iconBase+'round-cloud_download-24px.svg">'
                                 +'<div class="caption">'+v.title+'</div>'
@@ -485,7 +494,7 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                             +'</div>';
                     }
                     image_item += '<div class="item subitemid'+v.import_source_id+' hidden itemid'+v.import_source_id+' ender" data-w="165" data-h="1000">'
-                        +'<img src="'+imgproxyThumb(v.previewURL || v.url_thumb, THUMB_SIZE)+'" style="display:none !important;">'
+                        +'<img src="'+imgproxyPreview(v.previewURL || v.url_thumb)+'" style="display:none !important;">'
                         +'<div class="dlimg">'
                             +'<img src="'+iconBase+'baseline-arrow_back_ios-24px.svg" class="open">'
                         +'</div>'
@@ -494,7 +503,7 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                 else {
                     var iconBase = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/') + 'assets/img/';
                     image_item += '<div class="item upload'+(v.exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+imgproxyThumb(v.largeImageURL || v.url_full, UPLOAD_SIZE)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+(v.imageId || 0)+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.photocredit || '')+'" data-w="'+(v.webformatWidth || 0)+'" data-h="'+(v.webformatHeight || 0)+'">'
-                        +'<img src="'+imgproxyThumb(v.previewURL || v.url_thumb, THUMB_SIZE)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
+                        +'<img src="'+imgproxyPreview(v.previewURL || v.url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
                         +'<div class="dlimg">'
                             +'<img src="'+iconBase+'round-cloud_download-24px.svg">'
                             +'<div class="caption">'+v.title+'</div>'
@@ -748,7 +757,7 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 if (exh.installimage_count) counts.push(exh.installimage_count + ' install');
                 if (exh.artwork_count) counts.push(exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's'));
                 if (exh.pressrelease_count) counts.push(exh.pressrelease_count + ' press release' + (exh.pressrelease_count === 1 ? '' : 's'));
-                var thumb = exh.thumbURL ? self.imgproxyThumb(exh.thumbURL, self.THUMB_SIZE) : '';
+                var thumb = exh.thumbURL ? self.imgproxyPreview(exh.thumbURL) : '';
                 var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
 
                 html += '<div class="wlexh-card" data-exhibition-id="' + exh.id + '">'

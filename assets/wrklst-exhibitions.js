@@ -174,7 +174,7 @@
                 if (exh.artwork_count) counts.push(exh.artwork_count + ' artwork' + (exh.artwork_count === 1 ? '' : 's'));
                 if (exh.pressrelease_count) counts.push(exh.pressrelease_count + ' press release' + (exh.pressrelease_count === 1 ? '' : 's'));
 
-                var thumb = exh.thumbURL ? self.imgproxyThumb(exh.thumbURL, self.THUMB_SIZE) : '';
+                var thumb = exh.thumbURL ? self.imgproxyPreview(exh.thumbURL) : '';
                 var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
 
                 html += '<a href="#" class="wrklst-exh-card" data-exhibition-id="' + exh.id + '">' +

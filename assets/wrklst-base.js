@@ -32,19 +32,29 @@
 
         THUMB_SIZE: 500,
         UPLOAD_SIZE: 2500,
+        // Must match the imgproxy URL wrklst-app uses for overview thumbnails so the
+        // preview hits the existing cache and imgproxy does not generate extra variants.
+        PREVIEW_FORMAT: 'webp',
 
         imgproxyFormat: function() {
             return (typeof wrklst_image_config !== 'undefined' && wrklst_image_config.format) ? wrklst_image_config.format : 'jpg';
         },
 
-        imgproxyThumb: function(url, width) {
+        imgproxyUrl: function(url, width, fmt) {
             if (!url) return url;
             var i = url.indexOf('/plain/');
             if (i === -1) return url.replace('_150', '_' + width);
             var rest = url.slice(i);
-            var fmt = this.imgproxyFormat();
             rest = /@[a-zA-Z0-9]+$/.test(rest) ? rest.replace(/@[a-zA-Z0-9]+$/, '@' + fmt) : rest + '@' + fmt;
             return url.slice(0, i) + '/rs:fit:' + width + ':0' + rest;
+        },
+
+        imgproxyPreview: function(url) {
+            return this.imgproxyUrl(url, this.THUMB_SIZE, this.PREVIEW_FORMAT);
+        },
+
+        imgproxyThumb: function(url, width) {
+            return this.imgproxyUrl(url, width, this.imgproxyFormat());
         },
         
         // API Methods
@@ -140,7 +150,7 @@
             html += '<div class="item itemid' + work.import_source_id + ' upload multiimg' + 
                     (work.exists === 2 ? ' exists' : (work.exists ? ' existsp' : '')) + '" ' +
                     this.buildDataAttributes(work) + '>' +
-                    '<img src="' + this.imgproxyThumb(work.previewURL || work.url_thumb, this.THUMB_SIZE) + '" title="#' +
+                    '<img src="' + this.imgproxyPreview(work.previewURL || work.url_thumb) + '" title="#' +
                     (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
                     '<div class="dlimg">' +
                         '<img src="' + this.getIconPath('baseline-more_horiz-24px.svg') + '" class="more">' +
@@ -174,7 +184,7 @@
         renderSingleImageWork: function(work) {
             var html = '<div class="item upload' + (work.exists ? ' exists' : '') + '" ' +
                       this.buildDataAttributes(work) + '>' +
-                      '<img src="' + this.imgproxyThumb(work.previewURL || work.url_thumb, this.THUMB_SIZE) + '" title="#' +
+                      '<img src="' + this.imgproxyPreview(work.previewURL || work.url_thumb) + '" title="#' +
                       (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
                       '<div class="dlimg">' +
                           '<img src="' + this.getIconPath('round-cloud_download-24px.svg') + '">' +
@@ -201,7 +211,7 @@
                       'data-caption="' + (work.caption || '') + (img.photocredit || '') + '" ' +
                       'data-w="' + (img.webformatWidth || 0) + '" ' +
                       'data-h="' + (img.webformatHeight || 0) + '">' +
-                      '<img src="' + this.imgproxyThumb(img.previewURL || img.url_thumb, this.THUMB_SIZE) + '" title="#' +
+                      '<img src="' + this.imgproxyPreview(img.previewURL || img.url_thumb) + '" title="#' +
                       (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
                       '<div class="dlimg">' +
                           '<img src="' + this.getIconPath('round-cloud_download-24px.svg') + '">' +
