@@ -4,25 +4,48 @@
 **Tags:** wrklst, art, inventory, image, media, gallery  
 **Requires at least:** 4.8.1  
 **Tested up to:** 6.5.3  
-**Stable tag:** 3.0  
+**Stable tag:** 3.13  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
 ## Description
 
-[WrkLst](https://wrklst.art) is a professional artwork inventory management system. This WordPress plugin seamlessly integrates your WrkLst account with your WordPress website, enabling you to import artwork images and metadata directly into your WordPress Media Library.
+[WrkLst](https://wrklst.art) is a professional artwork inventory management system. This WordPress plugin connects your WrkLst account to your WordPress site so you can pull artworks, exhibitions, installation views, and press releases directly into the Media Library and into posts and pages.
 
 ## Features
 
-- **Media Library Integration:** Import artwork directly through the WordPress Media Library interface
-- **Bulk Import:** Transfer multiple artworks at once with batch processing
-- **Metadata Preservation:** Automatically import titles, captions, descriptions, and inventory numbers
-- **Multi-Image Support:** Handle artworks with multiple views/images
-- **Search & Filter:** Advanced search capabilities with inventory filtering
-- **Availability Status:** Filter artworks by availability status
-- **Responsive Grid Layout:** Beautiful flexbox-based image grid display
-- **Real-time Search:** Instant search results as you type
-- **Infinite Scroll:** Automatic loading of more results as you scroll
+### Inventory
+
+- **Inventory tab in the Media Library** ("WrkLst Inventory") and a dedicated **WrkLst → Inventory** admin subpage for browsing the full catalogue
+- **Real-time search** by title, artist, or inventory number, with infinite scroll
+- **Filter by inventory and availability status**, with selections persisted across sessions
+- **Multi-image artworks** are supported — each view can be imported independently
+- **Metadata preserved** on import: titles, captions, descriptions, inventory numbers
+- **Import-status badges** on previously imported works (fully / partially imported)
+
+### Exhibitions
+
+- **Exhibitions tab in the Media Library** ("WrkLst Exhibition") and a dedicated **WrkLst → Exhibitions** admin subpage with a two-step picker → detail flow
+- **Installation views and exhibited artworks** shown side-by-side on the detail view, with deduplication against the Media Library
+- **Bulk-import buttons** on the exhibition detail view:
+  - "Download all installation views"
+  - "Download all artworks"
+  - "Download all"
+  - "Download first image of each artwork" (one image per multi-image artwork)
+  Each button shows the remaining count and skips items already in the Media Library
+- **Auto-generated alt text** for installation images, built server-side from the exhibition data (title, solo/group framing, artists, venue, dates, artwork count)
+- **Press release HTML copy buttons** at the top of the detail header — one click copies cleaned Quill HTML to the clipboard, ready to paste into a post body
+
+### Image delivery & settings
+
+- **Image format setting** (JPEG / WebP) applied to imgproxy URLs for both Media Library thumbnails and uploaded copies
+- **imgproxy-backed sizes**: thumbnails at `rs:fit:500:0`, uploaded copies at `rs:fit:2500:0`
+- **Optional inventory number** in WordPress captions, controlled from the settings page
+- **Biography webhook** support (with configurable bio/news formats and a webhook auth token)
+
+### Updates
+
+- **Self-hosted updates from GitHub releases** — tagged releases of `wrklst/wrklst-plugin` surface in WordPress's Dashboard → Updates flow with one-click install
 
 ## Installation
 
@@ -44,26 +67,30 @@
 
 ## Usage
 
-### Importing Artwork via Media Library
+### Importing artworks via the Media Library
 
-1. Click 'Add New' in the Media Library
-2. Select the 'Import WrkLst Work' tab
-3. Search for artworks using title, artist, or inventory number
-4. Filter by inventory or availability status
-5. Click on any artwork to import it to your Media Library
+1. Open the Media Library and click 'Add New' (or insert media from the post editor)
+2. Select the **WrkLst Inventory** tab
+3. Search by title, artist, or inventory number; filter by inventory and/or availability
+4. Click an artwork to import it. Multi-image artworks expand so each view can be picked individually
 
-### Managing Imported Artwork
+### Importing from an exhibition
 
-- Imported artworks appear in your Media Library with all metadata intact
-- Use standard WordPress features to insert artworks into posts and pages
-- Artworks are marked to show import status (fully/partially imported)
+1. From the Media Library uploader open the **WrkLst Exhibition** tab, or go to **WrkLst → Exhibitions** in the admin
+2. Pick an exhibition from the picker
+3. On the detail view, either click individual installation views / artworks, or use the bulk-import buttons ("Download all installation views", "Download all artworks", "Download all", "Download first image of each artwork"). Already-imported items are skipped automatically
+4. If the exhibition has press releases, click the title button at the top to copy the cleaned HTML to your clipboard and paste it into a WordPress post
 
-### Works Overview Page
+### Inventory overview page
 
-- Access via WrkLst → Works in your WordPress admin
-- View all available artworks in a grid layout
-- Search and filter functionality
-- Click to import individual artworks
+- Open via **WrkLst → Inventory** in the admin
+- Browse the full catalogue in a grid with the same search/filter controls as the Media Library tab
+- Click an artwork to import it directly into the Media Library
+
+### Managing imported media
+
+- Imported artworks land in the Media Library with all metadata intact and can be inserted into posts and pages with the normal WordPress flow
+- Items are flagged to show their import status (fully / partially imported) so the next pass can resume where it left off
 
 ## Requirements
 
