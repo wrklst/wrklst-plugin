@@ -88,6 +88,9 @@ For support and documentation, please visit [WrkLst Support](https://wrklst.art/
 
 ## Changelog
 
+### 3.10
+- Revert: the admin menu icon points at `assets/img/wrklst-logo.svg` again. The 3.7 detour into a redrawn `wrklst-icon.svg` (stroked W and L glyphs) is removed — the original full-monogram logo is the icon
+
 ### 3.9
 - Fix: the "WrkLst Exhibition" tab inside the WordPress Media Library uploader now populates immediately on open. Previously the initial fetch fired before the submit handler was bound (because the API-credentials callback ran synchronously off the localized nonce), so the picker stayed empty until the user typed a character to re-trigger the fetch
 

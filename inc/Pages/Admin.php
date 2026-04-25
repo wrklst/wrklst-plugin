@@ -23,7 +23,7 @@ class Admin extends BaseController
                 'capability' => 'manage_options',
                 'menu_slug' => 'wrklst_works',
                 'callback' => [$this->callbacks,'adminWorks'],
-                'incon_url' => 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($this->plugin_path.'assets/img/wrklst-icon.svg')),
+                'incon_url' => 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($this->plugin_path.'assets/img/wrklst-logo.svg')),
                 'position' => 11
             ],
         ];
