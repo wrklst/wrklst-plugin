@@ -8,6 +8,9 @@ use \Inc\Api\SettingsApi;
 class BaseController
 {
     public $settings;
+    public $plugin_path;
+    public $plugin_url;
+    public $plugin_name;
 
     function __construct() {
         $this->settings = new SettingsApi();

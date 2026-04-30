@@ -4,7 +4,7 @@
 **Tags:** wrklst, art, inventory, image, media, gallery  
 **Requires at least:** 4.8.1  
 **Tested up to:** 6.5.3  
-**Stable tag:** 3.16  
+**Stable tag:** 3.17  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -114,6 +114,9 @@ To use this plugin, WrkLst users need to obtain API credentials. Please contact 
 For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
 
 ## Changelog
+
+### 3.17
+- Fix: declare `plugin_path`, `plugin_url`, and `plugin_name` on `BaseController` so PHP 8.2+ stops emitting "Creation of dynamic property is deprecated" notices for every subclass (Admin, Enqueue, AdminCallbacks, AjaxHandler, SettingsLinks, all post types, BiographyShortcode, BiographyWebhook). The notices were noisy enough to fill the WP-CLI plugin-update log on PHP 8.2+ hosts
 
 ### 3.16
 - Confirmed artworks in an exhibition are now visually marked with a green "confirmed" badge in the picker grid (admin subpage and Media Library tab)
