@@ -3,7 +3,7 @@
         'name' => 'wrklst/wrklst-plugin',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'a14390117426d5b93dc435d6c76b1804502424fd',
+        'reference' => '25fd47a8fbaf66933bb5371d486415cce66e45cd',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'mustache/mustache' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => 'fe8fe72e9d580591854de404cc59a1b83ca4d19e',
+            'pretty_version' => 'v2.14.2',
+            'version' => '2.14.2.0',
+            'reference' => 'e62b7c3849d22ec55f3ec425507bf7968193a6cb',
             'type' => 'library',
             'install_path' => __DIR__ . '/../mustache/mustache',
             'aliases' => array(),
@@ -22,7 +22,7 @@
         'wrklst/wrklst-plugin' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'a14390117426d5b93dc435d6c76b1804502424fd',
+            'reference' => '25fd47a8fbaf66933bb5371d486415cce66e45cd',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
