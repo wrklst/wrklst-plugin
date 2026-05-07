@@ -4,7 +4,7 @@
 **Tags:** wrklst, art, inventory, image, media, gallery  
 **Requires at least:** 4.8.1  
 **Tested up to:** 6.5.3  
-**Stable tag:** 3.19  
+**Stable tag:** 3.20  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -114,6 +114,9 @@ To use this plugin, WrkLst users need to obtain API credentials. Please contact 
 For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
 
 ## Changelog
+
+### 3.20
+- Fix: importing a single view from a multi-image artwork now populates Description and Alternative Text on the WP attachment again. The sub-image renderer in `wrklst-base.js` (`renderSubImage`) was emitting only `data-caption` and was missing `data-description` and `data-alt`, so the click handler had nothing to forward to the AJAX upload. Both attributes now inherit from the parent work — same value as a single-image artwork would carry — since the description and alt belong to the inventory record, not the individual image. (3.19 fixed the same gap on the inventory tab's click handler; this closes the corresponding gap on the sub-image markup it reads from)
 
 ### 3.19
 - Fix: importing an artwork from the Media Library "WrkLst Inventory" tab now populates the Description field on the attachment again. The click handler in that tab was sending only `image_caption` to the AJAX upload endpoint and was missing both `image_description` and `image_alt`. Regression introduced in the 3.2 Exhibitions refactor (the new Exhibition handler sent all three; the inventory handler in the same file kept the older payload)

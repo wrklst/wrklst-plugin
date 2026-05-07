@@ -233,6 +233,9 @@
             // Sub-images inherit the parent work's confirmed status — the pivot
             // confirmed flag belongs to the inventory record, not the individual
             // image — so they hide together when "Confirmed only" is on.
+            // Description and alt likewise belong to the work, not the image,
+            // so each sub-image carries the parent's data-description/data-alt
+            // (the photocredit-suffixed caption is the only per-image override).
             var html = '<div class="subitem hidden subitemid' + work.import_source_id +
                       ' item upload' + (img.exists ? ' exists' : '') +
                       this.confirmedClass(work) + '" ' +
@@ -245,6 +248,8 @@
                       'data-image_id="' + img.id + '" ' +
                       'data-import_inventory_id="' + (work.import_inventory_id || work.inv_id) + '" ' +
                       'data-caption="' + (work.caption || '') + (img.photocredit || '') + '" ' +
+                      'data-description="' + (work.description || '') + '" ' +
+                      'data-alt="' + (work.alt || '') + '" ' +
                       'data-w="' + (img.webformatWidth || 0) + '" ' +
                       'data-h="' + (img.webformatHeight || 0) + '">' +
                       '<img src="' + this.imgproxyPreview(img.previewURL || img.url_thumb) + '" title="#' +
