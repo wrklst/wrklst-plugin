@@ -4,7 +4,7 @@
 **Tags:** wrklst, art, inventory, image, media, gallery  
 **Requires at least:** 4.8.1  
 **Tested up to:** 6.5.3  
-**Stable tag:** 3.18  
+**Stable tag:** 3.19  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -114,6 +114,10 @@ To use this plugin, WrkLst users need to obtain API credentials. Please contact 
 For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
 
 ## Changelog
+
+### 3.19
+- Fix: importing an artwork from the Media Library "WrkLst Inventory" tab now populates the Description field on the attachment again. The click handler in that tab was sending only `image_caption` to the AJAX upload endpoint and was missing both `image_description` and `image_alt`. Regression introduced in the 3.2 Exhibitions refactor (the new Exhibition handler sent all three; the inventory handler in the same file kept the older payload)
+- Fix: italic markup on the artwork title (`<i>Title</i>`) now survives the import into the WP attachment Caption and Description fields. The AJAX handler was sanitizing both with `sanitize_textarea_field`, which strips ALL HTML tags. Switched to `wp_kses_post`, the same kses WordPress applies to `post_content`/`post_excerpt` on its own save path
 
 ### 3.18
 - Bump `mustache/mustache` from `dev-master` (an old commit predating PHP 8.x null-arg fixes) to `^2.14` — picks up `v2.14.2`. Silences the `trim(): Passing null` and `array offset on null` notices in `vendor/mustache/mustache/src/Mustache/Tokenizer.php` and `Parser.php` that were appearing on every plugin load on PHP 8.x hosts. The `\Mustache_Engine` class name used by `BiographyWebhook` is unchanged

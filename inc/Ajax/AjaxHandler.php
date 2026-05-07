@@ -384,8 +384,11 @@ class AjaxHandler extends BaseController
         $invnr = isset($_POST['invnr']) ? sanitize_text_field($_POST['invnr']) : '';
         $artist = isset($_POST['artist']) ? sanitize_text_field($_POST['artist']) : '';
         $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
-        $caption = isset($_POST['image_caption']) ? sanitize_textarea_field($_POST['image_caption']) : '';
-        $description = isset($_POST['image_description']) ? sanitize_textarea_field($_POST['image_description']) : '';
+        // wp_kses_post (rather than sanitize_textarea_field) so inline italic
+        // markup like <i>Title</i> survives the import — matches the kses
+        // WordPress applies to post_content/post_excerpt on its own save path.
+        $caption = isset($_POST['image_caption']) ? wp_kses_post($_POST['image_caption']) : '';
+        $description = isset($_POST['image_description']) ? wp_kses_post($_POST['image_description']) : '';
         $alt_text = isset($_POST['image_alt']) ? sanitize_text_field($_POST['image_alt']) : '';
         $import_source_id = isset($_POST['import_source_id']) ? sanitize_text_field((string) $_POST['import_source_id']) : '';
         $image_id = isset($_POST['image_id']) ? absint($_POST['image_id']) : 0;

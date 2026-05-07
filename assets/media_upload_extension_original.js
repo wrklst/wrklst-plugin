@@ -556,6 +556,8 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                 var uploadData = {
                     image_url: $(this).data('url'),
                     image_caption: $(this).data('caption'),
+                    image_description: $(this).data('description'),
+                    image_alt: $(this).data('alt'),
                     title: $(this).data('title'),
                     invnr: $(this).data('invnr'),
                     artist: $(this).data('artist'),
@@ -565,7 +567,7 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                     search_query: search_query,
                     wpnonce: $(this).data('wpnonce')
                 };
-                
+
                 self.uploadImage(uploadData, function(data){
                     that.addClass('doneuploading').find('.dlimg img').replaceWith('<img src="'+iconBase+'baseline-check-24px.svg" style="height:50px !important">');
                     var selection = frame.state().get('selection');
