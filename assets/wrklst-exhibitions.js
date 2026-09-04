@@ -189,15 +189,15 @@
                 var thumb = exh.thumbURL ? self.imgproxyPreview(exh.thumbURL) : '';
                 var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
 
-                html += '<a href="#" class="wrklst-exh-card" data-exhibition-id="' + exh.id + '">' +
+                html += '<a href="#" class="wrklst-exh-card" data-exhibition-id="' + self.escapeHtml(exh.id) + '">' +
                             '<div class="wrklst-exh-thumb">' +
-                                (thumb ? '<img src="' + thumb + '" alt="">' : '<div class="wrklst-exh-thumb-empty">No image</div>') +
+                                (thumb ? '<img src="' + self.escapeHtml(thumb) + '" alt="">' : '<div class="wrklst-exh-thumb-empty">No image</div>') +
                             '</div>' +
                             '<div class="wrklst-exh-meta">' +
-                                (artistsLine ? '<div class="wrklst-exh-artists">' + artistsLine + '</div>' : '') +
-                                '<div class="wrklst-exh-title">' + (exh.title || exh.display || '') + '</div>' +
-                                (meta.length ? '<div class="wrklst-exh-sub">' + meta.join(' · ') + '</div>' : '') +
-                                (counts.length ? '<div class="wrklst-exh-counts">' + counts.join(' · ') + '</div>' : '') +
+                                (artistsLine ? '<div class="wrklst-exh-artists">' + self.escapeHtml(artistsLine) + '</div>' : '') +
+                                '<div class="wrklst-exh-title">' + self.escapeHtml(exh.title || exh.display || '') + '</div>' +
+                                (meta.length ? '<div class="wrklst-exh-sub">' + self.escapeHtml(meta.join(' · ')) + '</div>' : '') +
+                                (counts.length ? '<div class="wrklst-exh-counts">' + self.escapeHtml(counts.join(' · ')) + '</div>' : '') +
                             '</div>' +
                         '</a>';
             });
@@ -274,12 +274,12 @@
             var self = this;
             var exh = this._currentExhibition || {};
             var headerBits = [];
-            if (exh.artists && exh.artists.length) headerBits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
-            headerBits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');
+            if (exh.artists && exh.artists.length) headerBits.push('<div style="color:#666;font-size:13px">' + self.escapeHtml(exh.artists.join(', ')) + '</div>');
+            headerBits.push('<h2 style="margin:0">' + self.escapeHtml(exh.title || exh.display || '') + '</h2>');
             var sub = [];
             if (exh.date_display) sub.push(exh.date_display);
             if (exh.venues && exh.venues.length) sub.push(exh.venues.join(', '));
-            if (sub.length) headerBits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
+            if (sub.length) headerBits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + self.escapeHtml(sub.join(' · ')) + '</div>');
 
             this.pressReleases = {};
             if (this._currentPressReleases.length) {
@@ -287,7 +287,7 @@
                 $.each(this._currentPressReleases, function(k, pr) {
                     self.pressReleases[pr.id] = pr.text || '';
                     var label = pr.title && pr.title.length ? pr.title : 'Press Release';
-                    prButtons += '<button type="button" class="button wrklst-pr-btn" data-pr-id="' + pr.id + '">' +
+                    prButtons += '<button type="button" class="button wrklst-pr-btn" data-pr-id="' + self.escapeHtml(pr.id) + '">' +
                                     '<span class="wrklst-pr-label">' + self.escapeHtml(label) + '</span>' +
                                     '<span class="wrklst-pr-hint">copy HTML</span>' +
                                  '</button>';
@@ -345,12 +345,6 @@
 
         applyConfirmedFilter: function() {
             this.$detailResults.toggleClass('wrklst-show-confirmed-only', !!this.confirmedOnly);
-        },
-
-        escapeHtml: function(s) {
-            return String(s).replace(/[&<>"']/g, function(c) {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-            });
         },
 
         countImportable: function(hits, opts) {

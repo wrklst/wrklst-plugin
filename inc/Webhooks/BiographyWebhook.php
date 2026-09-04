@@ -53,11 +53,7 @@ class BiographyWebhook extends BaseController
 
         $this->process_biography_update($webhook_input);
         
-        // Clear caches
-        if (function_exists('opcache_reset')) {
-            @opcache_reset();
-        }
-        
+        // Purge the SiteGround page cache so the updated biography shows immediately
         if (function_exists('sg_cachepress_purge_everything')) {
             sg_cachepress_purge_everything();
         }
@@ -68,7 +64,7 @@ class BiographyWebhook extends BaseController
 
     private function validate_webhook_token($webhook_input)
     {
-        if (empty($webhook_input['token'])) {
+        if (empty($webhook_input['token']) || !is_string($webhook_input['token'])) {
             return false;
         }
 
@@ -83,7 +79,7 @@ class BiographyWebhook extends BaseController
 
     private function process_biography_update($webhook_input)
     {
-        if (!isset($webhook_input['artist']) || !isset($webhook_input['categories'])) {
+        if (empty($webhook_input['artist']['id']) || !isset($webhook_input['categories'])) {
             return;
         }
 
@@ -93,6 +89,7 @@ class BiographyWebhook extends BaseController
         
         $mustache = new \Mustache_Engine([
             'escape' => function($value) {
+                $value = (string) $value;
                 if (strpos($value, '*[[DONOTESCAPE]]*') !== false) {
                     return str_replace('*[[DONOTESCAPE]]*', '', $value);
                 }

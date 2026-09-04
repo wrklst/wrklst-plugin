@@ -150,7 +150,7 @@
             this.getInventories(this.wrklstSecurityNonce, function(data) {
                 if (data && data.inventories) {
                     $.each(data.inventories, function(k, v) {
-                        self.$filterInventory.append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
+                        self.$filterInventory.append($('<option></option>').val(v.inv_sec_id).text(v.display_lnf));
                     });
                     if (self.getCookie('wrklst_filter_inventory')) {
                         self.$filterInventory.val(self.getCookie('wrklst_filter_inventory'));
@@ -177,7 +177,7 @@
                 per_page: this.perPage,
                 page: this.page,
                 inv_sec_id: this.$filterInventory.val(),
-                search: encodeURIComponent(this.searchQuery),
+                search: this.searchQuery,
                 wpnonce: this.wrklstSecurityNonce
             }, function(data) {
                 if (!(data.totalHits > 0)) {

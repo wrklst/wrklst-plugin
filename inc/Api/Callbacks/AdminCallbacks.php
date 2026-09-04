@@ -25,8 +25,10 @@ class AdminCallbacks extends BaseController
     public function wrklstOptionsGroup($input)
     {
         $options = get_option('wrklst_options');
-        if (isset($input['api']) && $input['api']) $options['api'] = $input['api']; else $options['api'] = '';
-        if (isset($input['account']) && $input['account']) $options['account'] = $input['account']; else $options['account'] = '';
+        $options = is_array($options) ? $options : [];
+        $options['api'] = isset($input['api']) ? sanitize_text_field($input['api']) : '';
+        // The account is a wrklst.com subdomain label. Anything else would send the API key to a foreign host.
+        $options['account'] = isset($input['account']) ? strtolower(preg_replace('/[^a-zA-Z0-9-]/', '', $input['account'])) : '';
         if (isset($input['cptartist']) && $input['cptartist']) $options['cptartist'] = $input['cptartist']; else $options['cptartist'] = 0;
         if (isset($input['cptexhibition']) && $input['cptexhibition']) $options['cptexhibition'] = $input['cptexhibition']; else $options['cptexhibition'] = 0;
         if (isset($input['cptartfair']) && $input['cptartfair']) $options['cptartfair'] = $input['cptartfair']; else $options['cptartfair'] = 0;
@@ -43,7 +45,7 @@ class AdminCallbacks extends BaseController
 {{/items}}
 </dl>
 {{/categories}}';
-        if ($input['musformatnews']) $options['musformatnews'] = $input['musformatnews']; else $options['musformatnews'] = '{{#news}}
+        if (isset($input['musformatnews']) && $input['musformatnews']) $options['musformatnews'] = $input['musformatnews']; else $options['musformatnews'] = '{{#news}}
 <p><span style="color: #000000;"><strong>{{display}}</strong></span></p>
 {{#items}}
 {{#year_display}}
@@ -52,7 +54,7 @@ class AdminCallbacks extends BaseController
 {{/items}}
 <p> </p>
 {{/news}}';
-        if (isset($input['whapikey']) && $input['whapikey']) $options['whapikey'] = $input['whapikey']; else $options['whapikey'] = substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32);
+        $options['whapikey'] = isset($input['whapikey']) && $input['whapikey'] ? sanitize_text_field($input['whapikey']) : wp_generate_password(32, false);
         
         if (isset($input['workdcaptioninvnr']) && $input['workdcaptioninvnr']) $options['workdcaptioninvnr'] = $input['workdcaptioninvnr']; else $options['workdcaptioninvnr'] = 0;
 
@@ -187,7 +189,7 @@ class AdminCallbacks extends BaseController
 {{/categories}}';
         }
 
-        echo '<textarea name="wrklst_options[musformatbio]" rows="12" cols="50">'.($options['musformatbio']).'</textarea>';
+        echo '<textarea name="wrklst_options[musformatbio]" rows="12" cols="50">'.esc_textarea($options['musformatbio']).'</textarea>';
     }
 
     public function wrklstNewsFormat()
@@ -207,23 +209,23 @@ class AdminCallbacks extends BaseController
     {{/news}}';
         }
 
-        echo '<textarea name="wrklst_options[musformatnews]" rows="12" cols="50">'.($options['musformatnews']).'</textarea>';
+        echo '<textarea name="wrklst_options[musformatnews]" rows="12" cols="50">'.esc_textarea($options['musformatnews']).'</textarea>';
     }
 
     public function wrklstWebhookApi()
     {
         $options = get_option('wrklst_options');
-        if(!isset($options['whapikey']))
-        {
-            $options = [];
-            $options['whapikey'] = substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32);
-        }
-        echo '<input type="text" class="regular-text" style="width: 100%; max-width:580px;" name="wrklst_options[whapikey]" value="'.($options['whapikey']?esc_attr($options['whapikey']):substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32).substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32)).'" placeholder="Define Bio Webhook Authentication Token" autocomplete="off" /><br /><br />
+        $options = is_array($options) ? $options : [];
+        $account = !empty($options['account']) ? $options['account'] : '';
+        $whapikey = !empty($options['whapikey']) ? $options['whapikey'] : wp_generate_password(32, false);
+        $settings_url = 'https://'.($account ?: '[your personal account slug]').'.wrklst.com/settings/generalaccount';
+        $listener_url = get_site_url().'/?webhook-listener=wl-biography';
+
+        echo '<input type="text" class="regular-text" style="width: 100%; max-width:580px;" name="wrklst_options[whapikey]" value="'.esc_attr($whapikey).'" placeholder="Define Bio Webhook Authentication Token" autocomplete="off" /><br /><br />
         Please go to '
-        .(isset($options['account'])&&$options['account']?'<a href="https://'.$options['account'].'.wrklst.com/settings/generalaccount" target="_blank">':'')
-            .'https://'.(isset($options['account'])&&$options['account']?$options['account']:'[your personal account slug]').'.wrklst.com/settings/generalaccount'
-        .(isset($options['account'])&&$options['account']?'</a>':'').' and then to "Webhook Sync". <bR />
-        Activate "Sync Biographies via Webhook with your webpage" and enter the following URL as well as your Bio Webhook Authentication Token:<br />'.get_site_url().'/?webhook-listener=wl-biography<br /><bR /><a href="/wp-admin/edit.php?post_type=wlbiography">Crated Biography Content Pages</a><br /><br />Example shortcode to include Biography in Wordpress: <strong>[wrklst_bio_content id=123]</strong> (id is the artist\'s id in WrkLst)<br /><br />';
+        .($account ? '<a href="'.esc_url($settings_url).'" target="_blank" rel="noopener">'.esc_html($settings_url).'</a>' : esc_html($settings_url))
+        .' and then to "Webhook Sync". <br />
+        Activate "Sync Biographies via Webhook with your webpage" and enter the following URL as well as your Bio Webhook Authentication Token:<br />'.esc_html($listener_url).'<br /><br /><a href="'.esc_url(admin_url('edit.php?post_type=wlbiography')).'">Created Biography Content Pages</a><br /><br />Example shortcode to include Biography in Wordpress: <strong>[wrklst_bio_content id=123]</strong> (id is the artist\'s id in WrkLst)<br /><br />';
     }
     
     public function wrklstWorkCaptionInvNr()

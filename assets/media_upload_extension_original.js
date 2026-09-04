@@ -422,7 +422,7 @@ media.view.wlWork = media.view.WrkLstBase.extend({
             self.getInventories(wrklst_security_nonce, function(data){
                 if (data && data.inventories) {
                     $.each(data.inventories, function(k, v) {
-                        $('#filter_inventory', form).append($('<option></option>').val(v.inv_sec_id).html(v.display_lnf));
+                        $('#filter_inventory', form).append($('<option></option>').val(v.inv_sec_id).text(v.display_lnf));
                     });
                     if (self.getCookie('wrklst_filter_inventory'))
                         $('#filter_inventory', form).val(self.getCookie('wrklst_filter_inventory'));
@@ -445,7 +445,7 @@ media.view.wlWork = media.view.WrkLstBase.extend({
                 per_page: per_page,
                 page: page,
                 inv_sec_id: $('#filter_inventory', form).val(),
-                search: encodeURIComponent(search_query),
+                search: search_query,
                 wpnonce: wrklst_security_nonce
             }, function(data){
                 if (!(data.totalHits > 0)) {
@@ -465,58 +465,9 @@ media.view.wlWork = media.view.WrkLstBase.extend({
             var pages = Math.ceil(data.totalHits/per_page);
             var image_item = '';
             
-            // Use the base class rendering if available
-            if (self.renderWorkItem) {
-                $.each(data.hits, function(k, v) {
-                    image_item += self.renderWorkItem(v);
-                });
-            } else {
-                // Fallback to original rendering
-                $.each(data.hits, function(k, v) {
-                var i=0;
-                if(v.multi_img=="1") {
-                    
-                    image_item += '<div class="item itemid'+v.import_source_id+' upload multiimg'+(v.exists===2?' exists':(v.exists?' existsp':''))+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+imgproxyThumb(v.largeImageURL || v.url_full, UPLOAD_SIZE)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+(v.imageId || 0)+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.photocredit || '')+'" data-w="'+(v.webformatWidth || 0)+'" data-h="'+(v.webformatHeight || 0)+'">'
-                        +'<img src="'+imgproxyPreview(v.previewURL || v.url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
-                        +'<div class="dlimg">'
-                            +'<img src="'+getIconPath('baseline-more_horiz-24px.svg')+'" class="more">'
-                            +'<img src="'+getIconPath('baseline-arrow_forward_ios-24px.svg')+'" class="open">'
-                            +'<div class="caption">'+v.title+'</div>'
-                        +'</div>'
-                        +'<div class="wrktitle"><img src="'+getIconPath('baseline-more_horiz-24px.svg')+'"><br />'+(v.exists?'<b>'+(v.exists===2?'all':'partly')+' downloaded</b><br />':'')+'#'+(v.inv_nr || v.invnr)+'</div>'
-                        +'</div>';
-                    var iconBase = getIconPath('');
-                    for(i=0;i<v.imgs.length;i++) {
-                        image_item += '<div class="subitem hidden subitemid'+v.import_source_id+' item upload'+(v.imgs[i].exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+imgproxyThumb(v.imgs[i].largeImageURL || v.imgs[i].url_full, UPLOAD_SIZE)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+v.imgs[i].id+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.imgs[i].photocredit || '')+'" data-w="'+(v.imgs[i].webformatWidth || 0)+'" data-h="'+(v.imgs[i].webformatHeight || 0)+'">'
-                            +'<img src="'+imgproxyPreview(v.imgs[i].previewURL || v.imgs[i].url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
-                            +'<div class="dlimg">'
-                                +'<img src="'+iconBase+'round-cloud_download-24px.svg">'
-                                +'<div class="caption">'+v.title+'</div>'
-                            +'</div>'
-                            +'<div class="wrktitle"><img src="'+iconBase+'round-cloud_download-24px.svg"><br />'+(v.imgs[i].exists?'<b>downloaded</b><br />':'')+'#'+(v.inv_nr || v.invnr)+'</div>'
-                            +'</div>';
-                    }
-                    image_item += '<div class="item subitemid'+v.import_source_id+' hidden itemid'+v.import_source_id+' ender" data-w="165" data-h="1000">'
-                        +'<img src="'+imgproxyPreview(v.previewURL || v.url_thumb)+'" style="display:none !important;">'
-                        +'<div class="dlimg">'
-                            +'<img src="'+iconBase+'baseline-arrow_back_ios-24px.svg" class="open">'
-                        +'</div>'
-                        +'</div>';
-                }
-                else {
-                    var iconBase = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/') + 'assets/img/';
-                    image_item += '<div class="item upload'+(v.exists?' exists':'')+'" data-title="'+v.title+'" data-wpnonce="'+v.wpnonce+'" data-url="'+imgproxyThumb(v.largeImageURL || v.url_full, UPLOAD_SIZE)+'" data-invnr="'+(v.inv_nr || v.invnr)+'" data-artist="'+(v.name_artist || v.artist)+'" data-import_source_id="'+v.import_source_id+'" data-image_id="'+(v.imageId || 0)+'" data-import_inventory_id="'+(v.import_inventory_id || v.inv_id)+'" data-caption="'+(v.caption || '')+(v.photocredit || '')+'" data-w="'+(v.webformatWidth || 0)+'" data-h="'+(v.webformatHeight || 0)+'">'
-                        +'<img src="'+imgproxyPreview(v.previewURL || v.url_thumb)+'" title="#'+(v.inv_nr || v.invnr)+'" alt="#'+(v.inv_nr || v.invnr)+'">'
-                        +'<div class="dlimg">'
-                            +'<img src="'+iconBase+'round-cloud_download-24px.svg">'
-                            +'<div class="caption">'+v.title+'</div>'
-                        +'</div>'
-                        +'<div class="wrktitle"><img src="'+iconBase+'round-cloud_download-24px.svg"><br />'+(v.exists?'<b>downloaded</b><br />':'')+'#'+(v.inv_nr || v.invnr)+'</div>'
-                        +'</div>';
-                }
-
+            $.each(data.hits, function(k, v) {
+                image_item += self.renderWorkItem(v);
             });
-            }
             $results.html($results.html()+image_item);
             $('#show_animation', $container).remove();
             if (page < pages) {
@@ -661,12 +612,6 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
             currentExhibitionId = null,
             pressReleases = {};
 
-        function escapeHtml(s) {
-            return String(s).replace(/[&<>"']/g, function(c) {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-            });
-        }
-
         function fallbackCopy(t) {
             var ta = document.createElement('textarea');
             ta.value = t;
@@ -717,12 +662,12 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
         function renderDetailHeader() {
             var bits = [];
             var exh = currentExh || {};
-            if (exh.artists && exh.artists.length) bits.push('<div style="color:#666;font-size:13px">' + exh.artists.join(', ') + '</div>');
-            bits.push('<h2 style="margin:0">' + (exh.title || exh.display || '') + '</h2>');
+            if (exh.artists && exh.artists.length) bits.push('<div style="color:#666;font-size:13px">' + self.escapeHtml(exh.artists.join(', ')) + '</div>');
+            bits.push('<h2 style="margin:0">' + self.escapeHtml(exh.title || exh.display || '') + '</h2>');
             var sub = [];
             if (exh.date_display) sub.push(exh.date_display);
             if (exh.venues && exh.venues.length) sub.push(exh.venues.join(', '));
-            if (sub.length) bits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + sub.join(' · ') + '</div>');
+            if (sub.length) bits.push('<div style="color:#666;font-size:13px;margin-top:4px">' + self.escapeHtml(sub.join(' · ')) + '</div>');
 
             pressReleases = {};
             if (currentPressReleases.length) {
@@ -730,8 +675,8 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 $.each(currentPressReleases, function(k, pr) {
                     pressReleases[pr.id] = pr.text || '';
                     var label = pr.title && pr.title.length ? pr.title : 'Press Release';
-                    prRow += '<button type="button" class="button wlexh-pr-btn" data-pr-id="' + pr.id + '">' +
-                                '<span class="wlexh-pr-label">' + escapeHtml(label) + '</span>' +
+                    prRow += '<button type="button" class="button wlexh-pr-btn" data-pr-id="' + self.escapeHtml(pr.id) + '">' +
+                                '<span class="wlexh-pr-label">' + self.escapeHtml(label) + '</span>' +
                                 '<span class="wlexh-pr-hint">copy HTML</span>' +
                              '</button>';
                 });
@@ -842,15 +787,15 @@ media.view.wlExhibition = media.view.WrkLstBase.extend({
                 var thumb = exh.thumbURL ? self.imgproxyPreview(exh.thumbURL) : '';
                 var artistsLine = exh.artists && exh.artists.length ? exh.artists.join(', ') : '';
 
-                html += '<div class="wlexh-card" data-exhibition-id="' + exh.id + '">'
+                html += '<div class="wlexh-card" data-exhibition-id="' + self.escapeHtml(exh.id) + '">'
                      +   '<div class="wlexh-thumb">'
-                     +     (thumb ? '<img src="' + thumb + '" alt="">' : '<div class="wlexh-thumb-empty">No image</div>')
+                     +     (thumb ? '<img src="' + self.escapeHtml(thumb) + '" alt="">' : '<div class="wlexh-thumb-empty">No image</div>')
                      +   '</div>'
                      +   '<div class="wlexh-meta">'
-                     +     (artistsLine ? '<div class="wlexh-artists">' + artistsLine + '</div>' : '')
-                     +     '<div class="wlexh-title">' + (exh.title || exh.display || '') + '</div>'
-                     +     (meta.length ? '<div class="wlexh-sub">' + meta.join(' · ') + '</div>' : '')
-                     +     (counts.length ? '<div class="wlexh-counts">' + counts.join(' · ') + '</div>' : '')
+                     +     (artistsLine ? '<div class="wlexh-artists">' + self.escapeHtml(artistsLine) + '</div>' : '')
+                     +     '<div class="wlexh-title">' + self.escapeHtml(exh.title || exh.display || '') + '</div>'
+                     +     (meta.length ? '<div class="wlexh-sub">' + self.escapeHtml(meta.join(' · ')) + '</div>' : '')
+                     +     (counts.length ? '<div class="wlexh-counts">' + self.escapeHtml(counts.join(' · ')) + '</div>' : '')
                      +   '</div>'
                      + '</div>';
             });

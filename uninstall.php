@@ -2,15 +2,10 @@
 /**
 * @package WrkLstPlugin
 */
-if(!defined( 'WP_UNINSTALL_PLUGIN')) {
+if (!defined('WP_UNINSTALL_PLUGIN')) {
     die();
 }
 
-//Clear database stored data
-/*$books = get_posts( ['post_type' => 'book', 'numberposts' = > -1] );
-foreach($books as $book) {
-    wp_delete_post($book->ID, true);
-}*/
-
 global $wpdb;
-$wpdb->query('DELETE FROM wp_postmeta WHERE meta_key LIKE "wrklst_%"');
+$wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE %s", $wpdb->esc_like('wrklst_') . '%'));
+delete_option('wrklst_options');

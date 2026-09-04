@@ -2,9 +2,9 @@
 
 **Contributors:** Tobias Vielmetter-Diekmann  
 **Tags:** wrklst, art, inventory, image, media, gallery  
-**Requires at least:** 4.8.1  
-**Tested up to:** 6.5.3  
-**Stable tag:** 3.20  
+**Requires at least:** 5.0  
+**Tested up to:** 7.1  
+**Stable tag:** 3.22  
 **License:** GPLv2  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -45,16 +45,17 @@
 
 ### Updates
 
-- **Self-hosted updates from GitHub releases** — tagged releases of `wrklst/wrklst-plugin` surface in WordPress's Dashboard → Updates flow with one-click install
+- **Self-hosted updates from GitHub** — version tags (`vX.Y`) pushed to `wrklst/wrklst-plugin` surface in WordPress's Dashboard → Updates flow with one-click install. The checker looks at GitHub releases first, then the highest version tag, and compares it with the installed `Version:` header; untagged commits on `master` are never offered
 
 ## Installation
 
 1. **Download the Plugin:**
-   - Download the latest version from the [GitHub repository](https://github.com/wrklst/wrklst-plugin)
+   - Download the zip of the latest version tag, e.g. `https://github.com/wrklst/wrklst-plugin/archive/refs/tags/v3.22.zip`, or use Code → Download ZIP on the [repository page](https://github.com/wrklst/wrklst-plugin)
+   - The `vendor/` folder is committed, so the zip is complete as downloaded — no `composer install` step
 
 2. **Upload the Plugin:**
-   - Upload the plugin folder to `/wp-content/plugins/wrklst-plugin/`
-   - Or install directly through the WordPress admin interface
+   - In WordPress go to Plugins → Add New → Upload Plugin and upload the zip, or unzip it into `/wp-content/plugins/`
+   - The folder name inside the zip (`wrklst-plugin-3.22`, `wrklst-plugin-master`, …) does not matter; later updates keep whatever folder name you installed with
 
 3. **Activate the Plugin:**
    - Navigate to 'Plugins' in your WordPress admin
@@ -95,8 +96,8 @@
 
 ## Requirements
 
-- WordPress 4.8.1 or higher
-- PHP 7.0 or higher
+- WordPress 5.0 or higher
+- PHP 7.4 or higher
 - Active WrkLst account with API access
 - Valid SSL certificate (for secure API communication)
 
@@ -115,6 +116,19 @@ The plugin authenticates with a **WordPress plugin** token from your WrkLst acco
 For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
 
 ## Changelog
+
+### 3.22
+- Security: the WrkLst API token is now sent only as an `Authorization: Bearer` header on every request. Three of the four API calls used to put it in the query string, where it lands in access logs and caches
+- Security: the Account ID setting is restricted to a `wrklst.com` subdomain label, so a mistyped or hostile value can no longer point the API token at another host. The API key, webhook token and the two Mustache templates are sanitized on save and escaped on display
+- Security: the Biography webhook token is generated with WordPress's CSPRNG (`wp_generate_password`) instead of `uniqid()`/`mt_rand()`
+- Security: the AJAX endpoints require the `upload_files` capability. Before, `edit_posts` was enough, which let Contributors sideload files into the Media Library
+- Security: artwork, exhibition and inventory names from the WrkLst API are HTML-escaped before rendering in wp-admin. A title containing quotes or tags previously broke the picker markup and could inject script into the admin session
+- Removed `templates/ajax_media_uploader_works.php`, an unused file that bootstrapped WordPress through a relative `wp-load.php` include when requested directly. Also removed the unused `assets/admin.js` (fully commented out) and `assets/send_b64_data.js`
+- Fix: multi-word searches on the Inventory tab lost their spaces (`Agnes Martin` reached the API as `AgnesMartin`). The JavaScript pre-encoded the query and `sanitize_text_field()` then stripped the percent-encoded characters; values are now encoded once, server-side
+- Fix: `uninstall.php` used the hard-coded `wp_postmeta` table name (a no-op on sites with a custom table prefix) and a LIKE pattern whose `_` matched any character. It now uses `$wpdb->postmeta`, an escaped prefix match, and also removes the plugin's options
+- Fix: icon URLs on the WrkLst → Inventory/Exhibitions admin pages assumed the plugin lives at `/wp-content/plugins/wrklst-plugin/`. They now use the real plugin URL, so a renamed folder (e.g. a GitHub zip download) or a subdirectory install works
+- Fix: the Biography webhook no longer resets the PHP opcode cache on every call, tolerates a non-string `token` field without a fatal error, and ignores payloads without an artist id
+- Plugin header declares `Requires at least: 5.0` and `Requires PHP: 7.4`. PHP 8.4 implicit-nullable deprecation in `SettingsApi` fixed
 
 ### 3.21
 - The settings page now says where the API key comes from: a **WordPress plugin** token created in WrkLst under Settings → API tokens, linked directly to your account's token page once the Account ID is entered. WordPress plugin tokens are self-service (no more emailing support) and carry exactly the rights this plugin needs — works and exhibitions for the website, nothing else

@@ -44,12 +44,13 @@ class Enqueue extends BaseController
             wp_localize_script('wrklst-base', 'wrklst_image_config', array(
                 'format' => $this->get_image_format(),
             ));
+            // wrklst-base.js builds icon URLs from this. Without it the fallback assumes
+            // /wp-content/plugins/wrklst-plugin/, which is wrong for a renamed plugin folder
+            // (e.g. a GitHub zip download) or a WordPress install in a subdirectory.
+            wp_add_inline_script('wrklst-base', 'var wrklst_plugin_url = ' . wp_json_encode($this->plugin_url) . ';', 'before');
         }
         
-        // Enqueue other scripts with proper dependencies
-        wp_enqueue_script('send_b64_data', $this->plugin_url . 'assets/send_b64_data.js', array('jquery'), WRKLST_PLUGIN_VERSION, true);
         wp_enqueue_style('wrklstStyle', $this->plugin_url . 'assets/style.css', array(), WRKLST_PLUGIN_VERSION);
-        wp_enqueue_script('wrklstScript', $this->plugin_url . 'assets/admin.js', array('jquery', 'wrklst-ajax', 'wrklst-debounce'), WRKLST_PLUGIN_VERSION, true);
         
         // Enqueue works page script and styles if on that page
         if (strpos($hook, 'wrklst_works') !== false && isset($_GET['page']) && $_GET['page'] === 'wrklst_works') {

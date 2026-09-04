@@ -25,6 +25,16 @@
             document.cookie = n + "=" + v + ";path=/;expires=" + date.toGMTString();
         },
         
+        // Escape an API string for use as an HTML text node or inside a double-quoted
+        // attribute. The browser decodes attribute entities exactly once, so a value read
+        // back with jQuery .data() is byte-for-byte the API string again — including the
+        // <i> markup and pre-encoded &quot; that caption/description/alt/photocredit carry.
+        escapeHtml: function(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        },
+
         getIconPath: function(iconName) {
             var base = (typeof wrklst_plugin_url !== 'undefined' ? wrklst_plugin_url : '/wp-content/plugins/wrklst-plugin/');
             return base + 'assets/img/' + iconName;
@@ -171,64 +181,63 @@
         },
         
         renderMultiImageWork: function(work) {
-            var self = this;
+            var invnr = this.escapeHtml(work.inv_nr || work.invnr);
+            var sid = this.escapeHtml(work.import_source_id);
             var html = '';
-            
+
             // Main multi-image item
-            html += '<div class="item itemid' + work.import_source_id + ' upload multiimg' +
+            html += '<div class="item itemid' + sid + ' upload multiimg' +
                     (work.exists === 2 ? ' exists' : (work.exists ? ' existsp' : '')) +
                     this.confirmedClass(work) + '" ' +
                     this.buildDataAttributes(work) + '>' +
-                    '<img src="' + this.imgproxyPreview(work.previewURL || work.url_thumb) + '" title="#' +
-                    (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
+                    '<img src="' + this.escapeHtml(this.imgproxyPreview(work.previewURL || work.url_thumb)) + '" title="#' + invnr + '" alt="#' + invnr + '">' +
                     '<div class="dlimg">' +
                         '<img src="' + this.getIconPath('baseline-more_horiz-24px.svg') + '" class="more">' +
                         '<img src="' + this.getIconPath('baseline-arrow_forward_ios-24px.svg') + '" class="open">' +
-                        '<div class="caption">' + work.title + '</div>' +
+                        '<div class="caption">' + this.escapeHtml(work.title) + '</div>' +
                     '</div>' +
                     '<div class="wrktitle"><img src="' + this.getIconPath('baseline-more_horiz-24px.svg') + '"><br />' +
                     this.confirmedBadge(work) +
                     (work.exists ? '<b>' + (work.exists === 2 ? 'all' : 'partly') + ' downloaded</b><br />' : '') +
-                    '#' + (work.inv_nr || work.invnr) + '</div>' +
+                    '#' + invnr + '</div>' +
                 '</div>';
-            
+
             // Sub-images
             if (work.imgs && work.imgs.length) {
                 for (var i = 0; i < work.imgs.length; i++) {
                     html += this.renderSubImage(work, work.imgs[i]);
                 }
             }
-            
+
             // End marker
-            html += '<div class="item itemid' + work.import_source_id + 
-                    ' subitemid' + work.import_source_id + ' hidden ender" ' +
-                    'data-w="165" data-h="1000" data-import_source_id="' + work.import_source_id + '">' +
+            html += '<div class="item itemid' + sid + ' subitemid' + sid + ' hidden ender" ' +
+                    'data-w="165" data-h="1000" data-import_source_id="' + sid + '">' +
                     '<div class="dlimg">' +
                         '<img src="' + this.getIconPath('baseline-arrow_back_ios-24px.svg') + '">' +
                     '</div>' +
                 '</div>';
-            
+
             return html;
         },
-        
+
         renderSingleImageWork: function(work) {
+            var invnr = this.escapeHtml(work.inv_nr || work.invnr);
             var html = '<div class="item upload' + (work.exists ? ' exists' : '') +
                       this.confirmedClass(work) + '" ' +
                       this.buildDataAttributes(work) + '>' +
-                      '<img src="' + this.imgproxyPreview(work.previewURL || work.url_thumb) + '" title="#' +
-                      (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
+                      '<img src="' + this.escapeHtml(this.imgproxyPreview(work.previewURL || work.url_thumb)) + '" title="#' + invnr + '" alt="#' + invnr + '">' +
                       '<div class="dlimg">' +
                           '<img src="' + this.getIconPath('round-cloud_download-24px.svg') + '">' +
-                          '<div class="caption">' + work.title + '</div>' +
+                          '<div class="caption">' + this.escapeHtml(work.title) + '</div>' +
                       '</div>' +
                       '<div class="wrktitle"><img src="' + this.getIconPath('round-cloud_download-24px.svg') + '"><br />' +
                       this.confirmedBadge(work) +
-                      (work.exists ? '<b>downloaded</b><br />' : '') + '#' + (work.inv_nr || work.invnr) + '</div>' +
+                      (work.exists ? '<b>downloaded</b><br />' : '') + '#' + invnr + '</div>' +
                   '</div>';
 
             return html;
         },
-        
+
         renderSubImage: function(work, img) {
             // Sub-images inherit the parent work's confirmed status — the pivot
             // confirmed flag belongs to the inventory record, not the individual
@@ -236,49 +245,49 @@
             // Description and alt likewise belong to the work, not the image,
             // so each sub-image carries the parent's data-description/data-alt
             // (the photocredit-suffixed caption is the only per-image override).
-            var html = '<div class="subitem hidden subitemid' + work.import_source_id +
+            var invnr = this.escapeHtml(work.inv_nr || work.invnr);
+            var html = '<div class="subitem hidden subitemid' + this.escapeHtml(work.import_source_id) +
                       ' item upload' + (img.exists ? ' exists' : '') +
                       this.confirmedClass(work) + '" ' +
-                      'data-title="' + work.title + '" ' +
-                      'data-wpnonce="' + work.wpnonce + '" ' +
-                      'data-url="' + this.imgproxyThumb(img.largeImageURL || img.url_full, this.UPLOAD_SIZE) + '" ' +
-                      'data-invnr="' + (work.inv_nr || work.invnr) + '" ' +
-                      'data-artist="' + (work.name_artist || work.artist) + '" ' +
-                      'data-import_source_id="' + work.import_source_id + '" ' +
-                      'data-image_id="' + img.id + '" ' +
-                      'data-import_inventory_id="' + (work.import_inventory_id || work.inv_id) + '" ' +
-                      'data-caption="' + (work.caption || '') + (img.photocredit || '') + '" ' +
-                      'data-description="' + (work.description || '') + '" ' +
-                      'data-alt="' + (work.alt || '') + '" ' +
-                      'data-w="' + (img.webformatWidth || 0) + '" ' +
-                      'data-h="' + (img.webformatHeight || 0) + '">' +
-                      '<img src="' + this.imgproxyPreview(img.previewURL || img.url_thumb) + '" title="#' +
-                      (work.inv_nr || work.invnr) + '" alt="#' + (work.inv_nr || work.invnr) + '">' +
+                      'data-title="' + this.escapeHtml(work.title) + '" ' +
+                      'data-wpnonce="' + this.escapeHtml(work.wpnonce) + '" ' +
+                      'data-url="' + this.escapeHtml(this.imgproxyThumb(img.largeImageURL || img.url_full, this.UPLOAD_SIZE)) + '" ' +
+                      'data-invnr="' + this.escapeHtml(work.inv_nr || work.invnr) + '" ' +
+                      'data-artist="' + this.escapeHtml(work.name_artist || work.artist) + '" ' +
+                      'data-import_source_id="' + this.escapeHtml(work.import_source_id) + '" ' +
+                      'data-image_id="' + this.escapeHtml(img.id) + '" ' +
+                      'data-import_inventory_id="' + this.escapeHtml(work.import_inventory_id || work.inv_id) + '" ' +
+                      'data-caption="' + this.escapeHtml((work.caption || '') + (img.photocredit || '')) + '" ' +
+                      'data-description="' + this.escapeHtml(work.description || '') + '" ' +
+                      'data-alt="' + this.escapeHtml(work.alt || '') + '" ' +
+                      'data-w="' + this.escapeHtml(img.webformatWidth || 0) + '" ' +
+                      'data-h="' + this.escapeHtml(img.webformatHeight || 0) + '">' +
+                      '<img src="' + this.escapeHtml(this.imgproxyPreview(img.previewURL || img.url_thumb)) + '" title="#' + invnr + '" alt="#' + invnr + '">' +
                       '<div class="dlimg">' +
                           '<img src="' + this.getIconPath('round-cloud_download-24px.svg') + '">' +
-                          '<div class="caption">' + work.title + '</div>' +
+                          '<div class="caption">' + this.escapeHtml(work.title) + '</div>' +
                       '</div>' +
                       '<div class="wrktitle"><img src="' + this.getIconPath('round-cloud_download-24px.svg') + '"><br />' +
-                      (img.exists ? '<b>downloaded</b><br />' : '') + '#' + (work.inv_nr || work.invnr) + '</div>' +
+                      (img.exists ? '<b>downloaded</b><br />' : '') + '#' + invnr + '</div>' +
                   '</div>';
-            
+
             return html;
         },
-        
+
         buildDataAttributes: function(work) {
-            return 'data-title="' + work.title + '" ' +
-                   'data-wpnonce="' + work.wpnonce + '" ' +
-                   'data-url="' + this.imgproxyThumb(work.largeImageURL || work.url_full, this.UPLOAD_SIZE) + '" ' +
-                   'data-invnr="' + (work.inv_nr || work.invnr) + '" ' +
-                   'data-artist="' + (work.name_artist || work.artist) + '" ' +
-                   'data-import_source_id="' + work.import_source_id + '" ' +
-                   'data-image_id="' + (work.imageId || 0) + '" ' +
-                   'data-import_inventory_id="' + (work.import_inventory_id || work.inv_id) + '" ' +
-                   'data-caption="' + (work.caption || '') + (work.photocredit || '') + '" ' +
-                   'data-description="' + (work.description || '') + '" ' +
-                   'data-alt="' + (work.alt || '') + '" ' +
-                   'data-w="' + (work.webformatWidth || 0) + '" ' +
-                   'data-h="' + (work.webformatHeight || 0) + '"';
+            return 'data-title="' + this.escapeHtml(work.title) + '" ' +
+                   'data-wpnonce="' + this.escapeHtml(work.wpnonce) + '" ' +
+                   'data-url="' + this.escapeHtml(this.imgproxyThumb(work.largeImageURL || work.url_full, this.UPLOAD_SIZE)) + '" ' +
+                   'data-invnr="' + this.escapeHtml(work.inv_nr || work.invnr) + '" ' +
+                   'data-artist="' + this.escapeHtml(work.name_artist || work.artist) + '" ' +
+                   'data-import_source_id="' + this.escapeHtml(work.import_source_id) + '" ' +
+                   'data-image_id="' + this.escapeHtml(work.imageId || 0) + '" ' +
+                   'data-import_inventory_id="' + this.escapeHtml(work.import_inventory_id || work.inv_id) + '" ' +
+                   'data-caption="' + this.escapeHtml((work.caption || '') + (work.photocredit || '')) + '" ' +
+                   'data-description="' + this.escapeHtml(work.description || '') + '" ' +
+                   'data-alt="' + this.escapeHtml(work.alt || '') + '" ' +
+                   'data-w="' + this.escapeHtml(work.webformatWidth || 0) + '" ' +
+                   'data-h="' + this.escapeHtml(work.webformatHeight || 0) + '"';
         }
     });
     

@@ -43,8 +43,9 @@ class AjaxHandler extends BaseController
             wp_send_json_error(['message' => __('Not logged in', 'wrklst-plugin')], 401);
         }
 
-        // Check for media upload capability for media-related operations
-        if (!current_user_can('upload_files') && !current_user_can('edit_posts')) {
+        // Every action here browses or imports into the Media Library, so gate on upload_files.
+        // edit_posts alone would let Contributors sideload files WordPress itself refuses them.
+        if (!current_user_can('upload_files')) {
             wp_send_json_error(['message' => __('Insufficient permissions', 'wrklst-plugin')], 403);
         }
     }
@@ -64,39 +65,8 @@ class AjaxHandler extends BaseController
         $this->check_permissions();
 
         $data = wp_cache_get('wrklst_inventories');
-        
         if (false === $data) {
-            $wrklst_settings = get_option('wrklst_options');
-            
-            if (empty($wrklst_settings['api']) || empty($wrklst_settings['account'])) {
-                wp_send_json_error(['message' => __('API settings not configured', 'wrklst-plugin')], 500);
-            }
-
-            $api_key = sanitize_text_field($wrklst_settings['api']);
-            $account = sanitize_text_field($wrklst_settings['account']);
-            $wrklst_url = 'https://' . $account . '.wrklst.com';
-
-            $response = wp_remote_get(
-                $wrklst_url . '/ext/api/wordpress/inventories',
-                [
-                    'headers' => [
-                        'Authorization' => 'Bearer ' . $api_key,
-                    ],
-                    'timeout' => 30,
-                ]
-            );
-
-            if (is_wp_error($response)) {
-                wp_send_json_error(['message' => $response->get_error_message()], 500);
-            }
-
-            $body = wp_remote_retrieve_body($response);
-            $data = json_decode($body, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                wp_send_json_error(['message' => __('Invalid API response', 'wrklst-plugin')], 500);
-            }
-
+            $data = $this->api_get('inventories');
             wp_cache_set('wrklst_inventories', $data, '', 240);
         }
 
@@ -119,65 +89,62 @@ class AjaxHandler extends BaseController
         $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
 
         $wrklst_settings = get_option('wrklst_options');
-        
-        if (empty($wrklst_settings['api']) || empty($wrklst_settings['account'])) {
-            wp_send_json_error(['message' => __('API settings not configured', 'wrklst-plugin')], 500);
-        }
-
-        $api_key = sanitize_text_field($wrklst_settings['api']);
-        $account = sanitize_text_field($wrklst_settings['account']);
-        $wrklst_url = 'https://' . $account . '.wrklst.com';
-
-        $cache_key = sprintf(
-            'wrklst_inv_req_%s|%d|%d|%d|%s',
-            $work_status,
-            $per_page,
-            $page,
-            $inv_sec_id,
-            $search
-        );
-        
+        $cache_key = sprintf('wrklst_inv_req_%s|%d|%d|%d|%s', $work_status, $per_page, $page, $inv_sec_id, $search);
         $data = wp_cache_get($cache_key);
-
         if (false === $data) {
             $query_args = [
-                'token' => $api_key,
                 'work_status' => $work_status,
                 'per_page' => $per_page,
                 'page' => $page,
                 'search' => $search,
             ];
-
             // Only add inv_sec_id if a specific inventory is selected
             if ($inv_sec_id > 0) {
                 $query_args['inv_sec_id'] = $inv_sec_id;
             }
-
             if (!empty($wrklst_settings['workdcaptioninvnr'])) {
                 $query_args['incinvnr'] = 1;
             }
-
-            $response = wp_remote_get(
-                add_query_arg($query_args, $wrklst_url . '/ext/api/wordpress/'),
-                ['timeout' => 30]
-            );
-
-            if (is_wp_error($response)) {
-                wp_send_json_error(['message' => $response->get_error_message()], 500);
-            }
-
-            $body = wp_remote_retrieve_body($response);
-            $data = json_decode($body, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                wp_send_json_error(['message' => __('Invalid API response', 'wrklst-plugin')], 500);
-            }
-
+            $data = $this->api_get('', $query_args);
             wp_cache_set($cache_key, $data, '', 30);
         }
 
         $wrklst_data = $this->process_inventory_data($data);
         wp_send_json_success($wrklst_data);
+    }
+
+    /**
+     * GET one of WrkLst's WordPress-integration endpoints with the configured account and token.
+     * Sends a JSON error and exits on any failure; returns the decoded body otherwise.
+     */
+    private function api_get($path, array $query = [])
+    {
+        $settings = get_option('wrklst_options');
+        if (empty($settings['api']) || empty($settings['account'])) {
+            wp_send_json_error(['message' => __('API settings not configured', 'wrklst-plugin')], 500);
+        }
+
+        // Subdomain label only, so the token can never be sent to a foreign host.
+        $account = preg_replace('/[^a-zA-Z0-9-]/', '', $settings['account']);
+        // add_query_arg() does not encode values, so encode them here.
+        $url = add_query_arg(array_map('rawurlencode', $query), 'https://' . $account . '.wrklst.com/ext/api/wordpress/' . ltrim($path, '/'));
+
+        // The token travels in the header, never the query string, so it stays out of access logs and caches.
+        $response = wp_remote_get($url, [
+            'headers' => ['Authorization' => 'Bearer ' . sanitize_text_field($settings['api'])],
+            'timeout' => 30,
+        ]);
+
+        if (is_wp_error($response)) {
+            wp_send_json_error(['message' => $response->get_error_message()], 500);
+        }
+
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error(['message' => __('Invalid API response', 'wrklst-plugin')], 500);
+        }
+
+        return $data;
     }
 
     private function process_inventory_data($data)
@@ -281,41 +248,14 @@ class AjaxHandler extends BaseController
         $page = isset($_POST['page']) ? absint($_POST['page']) : 1;
         $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
 
-        $wrklst_settings = get_option('wrklst_options');
-        if (empty($wrklst_settings['api']) || empty($wrklst_settings['account'])) {
-            wp_send_json_error(['message' => __('API settings not configured', 'wrklst-plugin')], 500);
-        }
-
-        $api_key = sanitize_text_field($wrklst_settings['api']);
-        $account = sanitize_text_field($wrklst_settings['account']);
-        $wrklst_url = 'https://' . $account . '.wrklst.com';
-
         $cache_key = sprintf('wrklst_exh_list_%d|%d|%s', $per_page, $page, $search);
         $data = wp_cache_get($cache_key);
-
         if (false === $data) {
-            $response = wp_remote_get(
-                add_query_arg(
-                    [
-                        'token' => $api_key,
-                        'per_page' => $per_page,
-                        'page' => $page,
-                        'search' => $search,
-                    ],
-                    $wrklst_url . '/ext/api/wordpress/exhibitions'
-                ),
-                ['timeout' => 30]
-            );
-
-            if (is_wp_error($response)) {
-                wp_send_json_error(['message' => $response->get_error_message()], 500);
-            }
-
-            $data = json_decode(wp_remote_retrieve_body($response), true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                wp_send_json_error(['message' => __('Invalid API response', 'wrklst-plugin')], 500);
-            }
-
+            $data = $this->api_get('exhibitions', [
+                'per_page' => $per_page,
+                'page' => $page,
+                'search' => $search,
+            ]);
             wp_cache_set($cache_key, $data, '', 60);
         }
 
@@ -333,37 +273,14 @@ class AjaxHandler extends BaseController
         }
 
         $wrklst_settings = get_option('wrklst_options');
-        if (empty($wrklst_settings['api']) || empty($wrklst_settings['account'])) {
-            wp_send_json_error(['message' => __('API settings not configured', 'wrklst-plugin')], 500);
-        }
-
-        $api_key = sanitize_text_field($wrklst_settings['api']);
-        $account = sanitize_text_field($wrklst_settings['account']);
-        $wrklst_url = 'https://' . $account . '.wrklst.com';
-
         $cache_key = 'wrklst_exh_items_' . $exhibition_id;
         $data = wp_cache_get($cache_key);
-
         if (false === $data) {
-            $query_args = ['token' => $api_key];
+            $query_args = [];
             if (!empty($wrklst_settings['workdcaptioninvnr'])) {
                 $query_args['incinvnr'] = 1;
             }
-
-            $response = wp_remote_get(
-                add_query_arg($query_args, $wrklst_url . '/ext/api/wordpress/exhibitions/' . $exhibition_id),
-                ['timeout' => 30]
-            );
-
-            if (is_wp_error($response)) {
-                wp_send_json_error(['message' => $response->get_error_message()], 500);
-            }
-
-            $data = json_decode(wp_remote_retrieve_body($response), true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                wp_send_json_error(['message' => __('Invalid API response', 'wrklst-plugin')], 500);
-            }
-
+            $data = $this->api_get('exhibitions/' . $exhibition_id, $query_args);
             wp_cache_set($cache_key, $data, '', 30);
         }
 

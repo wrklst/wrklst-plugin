@@ -30,7 +30,7 @@ class SettingsApi
         return $this;
     }
 
-    public function withSubPage(string $title = null)
+    public function withSubPage(?string $title = null)
     {
         if(empty($this->pages))
         {
