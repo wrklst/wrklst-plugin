@@ -108,7 +108,15 @@ class AdminCallbacks extends BaseController
             $options['api'] = '';
         }
 
-        echo '<input type="password" class="regular-text" name="wrklst_options[api]" value="'.esc_attr($options['api']).'" placeholder="Enter your api key" autocomplete="off" />';
+        $account = isset($options['account']) && $options['account'] ? $options['account'] : '';
+        $tokens_url = 'https://'.($account ?: '[your account id]').'.wrklst.com/settings/apitokens';
+
+        echo '<input type="password" class="regular-text" name="wrklst_options[api]" value="'.esc_attr($options['api']).'" placeholder="Paste your WordPress plugin token" autocomplete="off" />';
+        echo '<p class="description">'
+            .'Create a <strong>WordPress plugin</strong> token in WrkLst under Settings &rarr; API tokens'
+            .($account ? ': <a href="'.esc_url($tokens_url).'" target="_blank" rel="noopener">'.esc_html($tokens_url).'</a>' : ' (enter your Account ID above and save to get the link)')
+            .'. A WordPress plugin token shows works and exhibitions only &mdash; no prices, nothing confidential.'
+            .'</p>';
     }
 
     public function wrklstCustomPostTypeArtist()

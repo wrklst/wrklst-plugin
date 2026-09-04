@@ -62,7 +62,8 @@
 
 4. **Configure Settings:**
    - Go to WrkLst → Settings in your WordPress admin
-   - Enter your WrkLst API credentials
+   - Enter your WrkLst account ID (the part before `.wrklst.com`)
+   - In WrkLst, open **Settings → API tokens** (`https://<account>.wrklst.com/settings/apitokens`), create a **WordPress plugin** token and paste it into "WrkLst API Key"
    - Save the settings
 
 ## Usage
@@ -107,13 +108,17 @@ When updating dependencies, run `composer update` (or `composer require ...`) an
 
 ## Getting API Access
 
-To use this plugin, WrkLst users need to obtain API credentials. Please contact **support@wrklst.art** to request the creation of an API key for authenticating the plugin with your WrkLst account.
+The plugin authenticates with a **WordPress plugin** token from your WrkLst account. Any WrkLst admin can create one under **Settings → API tokens** (`https://<account>.wrklst.com/settings/apitokens`): choose "WordPress plugin", name it after your site, and paste the token — it is shown only once — into the plugin's settings. A WordPress plugin token can read works and exhibitions for your site and nothing else: no prices, nothing confidential, no access to the rest of the API. Revoke it from the same page at any time.
 
 ## Support
 
 For support and documentation, please visit [WrkLst Support](https://wrklst.art/support)
 
 ## Changelog
+
+### 3.21
+- The settings page now says where the API key comes from: a **WordPress plugin** token created in WrkLst under Settings → API tokens, linked directly to your account's token page once the Account ID is entered. WordPress plugin tokens are self-service (no more emailing support) and carry exactly the rights this plugin needs — works and exhibitions for the website, nothing else
+- Plugin URI corrected to the repository this plugin is released from (`wrklst/wrklst-plugin`)
 
 ### 3.20
 - Fix: importing a single view from a multi-image artwork now populates Description and Alternative Text on the WP attachment again. The sub-image renderer in `wrklst-base.js` (`renderSubImage`) was emitting only `data-caption` and was missing `data-description` and `data-alt`, so the click handler had nothing to forward to the AJAX upload. Both attributes now inherit from the parent work — same value as a single-image artwork would carry — since the description and alt belong to the inventory record, not the individual image. (3.19 fixed the same gap on the inventory tab's click handler; this closes the corresponding gap on the sub-image markup it reads from)
